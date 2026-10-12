@@ -4,6 +4,9 @@ export type Locale = (typeof locales)[number];
 
 export const defaultLocale: Locale = "en";
 
+// Set when the user switches language; takes priority over Accept-Language.
+export const localeCookie = "NEXT_LOCALE";
+
 export const hasLocale = (value: string): value is Locale =>
   (locales as readonly string[]).includes(value);
 
