@@ -5,9 +5,32 @@ const zh: Dictionary = {
     title: "蒋承霖",
     description: "可视化方向的前端工程师：3D 地图、数据可视化、全栈工程化。",
   },
+  nav: {
+    label: "主导航",
+    home: "首页",
+    projects: "作品",
+    blog: "博客",
+    about: "关于",
+  },
+  localeSwitcher: {
+    label: "切换语言",
+  },
   home: {
     title: "蒋承霖",
     intro: "可视化方向的前端工程师。",
+  },
+  projects: {
+    title: "作品",
+    intro: "精选作品，整理中。",
+  },
+  blog: {
+    title: "博客",
+    intro: "文章整理中。",
+  },
+  about: {
+    title: "关于",
+    intro: "个人介绍，整理中。",
+    contactTitle: "联系",
   },
 };
 
