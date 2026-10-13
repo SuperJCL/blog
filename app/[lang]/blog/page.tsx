@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Page } from "@/components/page";
 import { htmlLang, localeNames } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { formatDate } from "@/lib/format";
@@ -16,7 +17,7 @@ export default async function BlogPage() {
   const posts = getPostList(locale);
 
   return (
-    <main>
+    <Page>
       <h1>{dict.blog.title}</h1>
       {posts.length === 0 ? (
         <p>{dict.blog.empty}</p>
@@ -37,6 +38,6 @@ export default async function BlogPage() {
           ))}
         </ul>
       )}
-    </main>
+    </Page>
   );
 }

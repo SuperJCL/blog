@@ -6,10 +6,14 @@ const en = {
   },
   nav: {
     label: "Main",
-    home: "Home",
+    brandShort: "CJ",
     projects: "Projects",
     blog: "Blog",
     about: "About",
+    contact: "Contact",
+  },
+  footer: {
+    contactLabel: "Contact links",
   },
   localeSwitcher: {
     label: "Switch language",

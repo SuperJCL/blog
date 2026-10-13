@@ -7,10 +7,14 @@ const zh: Dictionary = {
   },
   nav: {
     label: "主导航",
-    home: "首页",
+    brandShort: "蒋承霖",
     projects: "作品",
     blog: "博客",
     about: "关于",
+    contact: "联系我",
+  },
+  footer: {
+    contactLabel: "联系方式",
   },
   localeSwitcher: {
     label: "切换语言",

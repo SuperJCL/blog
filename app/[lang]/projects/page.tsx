@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Page } from "@/components/page";
 import { getDictionary } from "@/i18n/get-dictionary";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -9,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ProjectsPage() {
   const dict = await getDictionary();
   return (
-    <main>
+    <Page>
       <h1>{dict.projects.title}</h1>
       <p>{dict.projects.intro}</p>
-    </main>
+    </Page>
   );
 }

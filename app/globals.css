@@ -56,6 +56,7 @@
   /* Layout */
   --spacing-gutter: clamp(16px, 5vw, 72px); /* page side padding */
   --spacing-nav: 72px; /* fixed header height */
+  --spacing-page-top: calc(var(--spacing-nav) + clamp(2rem, 6vh, 4.5rem)); /* normal pages: header plus air */
   --container-page: 1320px; /* max-w-page */
   --container-measure: 38em; /* max-w-measure: about 38 Chinese characters per line at the element's own size */
 
@@ -155,10 +156,15 @@
     background-color: var(--bg);
     color: var(--fg);
     line-height: 1.6;
+    scroll-padding-top: var(--spacing-nav); /* anchors (#contact) land below the fixed header */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     /* Anton has one weight and Plex Mono two: never fake a bolder one. */
     font-synthesis-weight: none;
+  }
+  /* A long code line scrolls inside its block; otherwise phones widen the whole layout to fit it. */
+  pre {
+    overflow-x: auto;
   }
   ::selection {
     background-color: var(--accent);

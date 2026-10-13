@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { htmlLang, locales } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
@@ -24,9 +25,10 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
   const locale = await getLocale();
   return (
     <html lang={htmlLang[locale]} className={fontVariables}>
-      <body>
+      <body className="flex min-h-dvh flex-col">
         <SiteHeader />
         {children}
+        <SiteFooter />
       </body>
     </html>
   );

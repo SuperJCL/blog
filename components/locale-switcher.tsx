@@ -10,9 +10,10 @@ type Props = {
   currentLocale: Locale;
   targetLocale: Locale;
   label: string;
+  className?: string;
 };
 
-export function LocaleSwitcher({ currentLocale, targetLocale, label }: Props) {
+export function LocaleSwitcher({ currentLocale, targetLocale, label, className }: Props) {
   const pathname = usePathname();
   // "/zh/blog" -> "/en/blog": swap only the locale segment, keep the rest.
   const href = `/${targetLocale}${pathname.slice(currentLocale.length + 1)}`;
@@ -22,6 +23,7 @@ export function LocaleSwitcher({ currentLocale, targetLocale, label }: Props) {
       href={href}
       hrefLang={targetLocale}
       aria-label={label}
+      className={className}
       onClick={() => {
         document.cookie = `${localeCookie}=${targetLocale}; path=/; max-age=${oneYear}; samesite=lax`;
       }}

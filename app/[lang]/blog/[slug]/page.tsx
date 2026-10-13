@@ -2,6 +2,7 @@ import { MDXContent } from "@content-collections/mdx/react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Page } from "@/components/page";
 import { htmlLang } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { formatDate } from "@/lib/format";
@@ -42,7 +43,7 @@ export default async function PostPage({ params }: PageProps<"/[lang]/blog/[slug
   const translation = getPostVersions(slug).find((v) => v.lang !== post.lang);
 
   return (
-    <main>
+    <Page>
       {post.lang !== locale && <p>{dict.blog.onlyIn[post.lang]}</p>}
       <article lang={htmlLang[post.lang]}>
         <header>
@@ -65,6 +66,6 @@ export default async function PostPage({ params }: PageProps<"/[lang]/blog/[slug
           <Link href={`/${locale}/blog`}>{dict.blog.allPosts}</Link>
         </p>
       </nav>
-    </main>
+    </Page>
   );
 }
