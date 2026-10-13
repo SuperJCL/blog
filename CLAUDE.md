@@ -10,8 +10,8 @@ Chenglin Jiang 的个人主页 + 技术博客。
 
 - Next.js 16，App Router，TypeScript（strict 模式）
 - 样式工具：Tailwind CSS
-- 部署：Vercel
-- 博客内容方案：待定。阶段 1 先给我 2–3 个方案和各自的取舍，由我决定
+- 部署：Vercel，线上地址 https://charliejiangblog.vercel.app ，推送到 `main` 自动部署
+- 博客内容方案：MDX + content-collections，文章放在 `content/posts/<slug>.<lang>.mdx`，同一 slug 的不同语言版本互为译文
 
 # 双语
 
@@ -55,4 +55,4 @@ Chenglin Jiang 的个人主页 + 技术博客。
 3. 页面与内容：按设计稿做页面，简历数据化、作品案例、第一篇文章
 4. 打磨：SEO、RSS、暗色模式切换、性能、可访问性、3D 可视化 demo
 
-当前阶段：1
+当前阶段：2
