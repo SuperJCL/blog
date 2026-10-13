@@ -9,11 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@content-collections/mdx": "^0.2.2",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@content-collections/core": "^0.15.3",
+    "@content-collections/next": "^0.2.11",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24.19.2",
     "@types/react": "^19",
@@ -21,6 +24,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "zod": "^4.6.7"
   }
 }

@@ -24,7 +24,14 @@ const en = {
   },
   blog: {
     title: "Blog",
-    intro: "Articles, coming soon.",
+    empty: "No posts yet.",
+    allPosts: "All posts",
+    // Keyed by the language of the version being linked to or shown.
+    readIn: { en: "Read in English", zh: "Read in Chinese" },
+    onlyIn: {
+      en: "This post is only available in English.",
+      zh: "This post is only available in Chinese.",
+    },
   },
   about: {
     title: "About",

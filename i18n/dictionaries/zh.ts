@@ -25,7 +25,13 @@ const zh: Dictionary = {
   },
   blog: {
     title: "博客",
-    intro: "文章整理中。",
+    empty: "还没有文章。",
+    allPosts: "全部文章",
+    readIn: { en: "阅读英文版", zh: "阅读中文版" },
+    onlyIn: {
+      en: "本文只有英文版。",
+      zh: "本文只有中文版。",
+    },
   },
   about: {
     title: "关于",
