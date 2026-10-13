@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { htmlLang, locales } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { fontVariables } from "../fonts";
 import "../globals.css";
 
 export function generateStaticParams() {
@@ -22,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
   const locale = await getLocale();
   return (
-    <html lang={htmlLang[locale]}>
+    <html lang={htmlLang[locale]} className={fontVariables}>
       <body>
         <SiteHeader />
         {children}

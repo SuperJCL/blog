@@ -33,7 +33,23 @@ Chenglin Jiang 的个人主页 + 技术博客。
 - 内容与展示分离：简历、项目、经历等数据放在独立的数据文件中，组件只负责展示
 - 默认使用服务端组件，只有需要交互时才加 `'use client'`
 - 颜色、字体、间距等设计变量集中定义，组件里不要写死具体数值
-- 阶段 2 定稿之前不做视觉设计，只写保证布局可用的最少样式
+- 视觉按下面「设计」一节执行
+
+# 设计
+
+方向 D「高对比作品集」：近黑舞台、荧光绿强调色、Anton 大标题。样稿：https://claude.ai/artifact/PHV3WviMzcTSBLb4LZMq5T
+
+- 变量位置：颜色、字号、间距、缓动在 `app/globals.css`，字体在 `app/fonts.ts`，JS 驱动的弹簧参数在 `lib/motion.ts`
+- 只用变量生成的工具类，例如 `bg-bg`、`text-fg`、`text-muted`、`border-line`、`bg-surface`、`font-display`、`max-w-measure`；Tailwind 默认色板已关闭
+- 颜色：亮色、暗色各一套，默认跟随系统；`<html data-theme>` 留给阶段 4 的暗色模式切换
+- `.stage` 区块在两种主题下都是暗色，用于首页首屏和代码块
+- 荧光绿：`accent` 只作填充，上面的文字用 `accent-ink`；作文字、细线、焦点框时用 `accent-text`（亮色下是深绿）
+- 字体：标题 Anton，英文正文 Instrument Sans，标签和代码 IBM Plex Mono，中文 Noto Sans SC（标题 900）
+- 中文不加 `uppercase`，英文名和单位保持原样（Next.js、30 s）；英文标题和等宽标签可以大写
+- 长文正文：字号 `text-read`（17px），行宽 `max-w-measure`（38em，约 38 个汉字），行高英文 1.75、中文 1.9
+- 首页整屏翻页（弹簧速度 35、阻尼 0.90），其余页面正常滚动
+- 作品详情固定四段：问题、我的角色、做法、结果；没有截图的项目用抽象示意图代替封面
+- 所有动效都要尊重系统的"减少动态效果"设置
 
 # 内容规则
 
@@ -55,4 +71,4 @@ Chenglin Jiang 的个人主页 + 技术博客。
 3. 页面与内容：按设计稿做页面，简历数据化、作品案例、第一篇文章
 4. 打磨：SEO、RSS、暗色模式切换、性能、可访问性、3D 可视化 demo
 
-当前阶段：2
+当前阶段：3

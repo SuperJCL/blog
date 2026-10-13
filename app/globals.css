@@ -1,1 +1,187 @@
 @import "tailwindcss";
+
+/*
+ * Design tokens for direction D. The rules for using them are in CLAUDE.md under 设计.
+ * Components use the utilities generated here (bg-bg, text-muted, border-line, font-display, max-w-measure…),
+ * never raw values.
+ */
+
+/* Semantic colors and font stacks. `inline` makes each utility read the variable where it's used, so a
+   .stage block re-themes everything inside it. Tailwind's default palette is switched off: only these exist. */
+@theme inline {
+  --color-*: initial;
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-surface: var(--surface);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-ink: var(--accent-ink);
+  --color-prose: var(--prose);
+
+  --font-display: var(--font-anton), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-sans: var(--font-instrument-sans), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: var(--font-plex-mono), var(--font-noto-sans-sc), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Long-form body; the line height follows the language (see [lang] below). */
+  --text-read: 1.0625rem;
+  --text-read--line-height: var(--leading-read);
+}
+
+@theme {
+  /* Code panels are dark in both themes. */
+  --color-code: #121211;
+  --color-code-fg: #ecece6;
+  --color-code-muted: #8a8a82;
+  --color-code-line: #2a2a27;
+  --color-syntax-keyword: #d4ff3a;
+  --color-syntax-string: #ffcf8a;
+  --color-syntax-function: #ffffff;
+  --color-syntax-number: #9fd6ff;
+
+  /* Type scale */
+  --text-display: clamp(2.8rem, 1rem + 7vw, 8.4rem);
+  --text-display--line-height: 0.92;
+  --text-h2: clamp(1.9rem, 1rem + 3vw, 3.4rem);
+  --text-h2--line-height: 1.1;
+  --text-lede: clamp(1.05rem, 0.95rem + 0.5vw, 1.35rem);
+  --text-lede--line-height: 1.6;
+  --text-label: 0.6875rem; /* mono labels, usually uppercase */
+  --text-label--line-height: 1.3;
+  --text-label--letter-spacing: 0.12em;
+  --leading-read: 1.75;
+  --tracking-read: 0;
+
+  /* Layout */
+  --spacing-gutter: clamp(16px, 5vw, 72px); /* page side padding */
+  --spacing-nav: 72px; /* fixed header height */
+  --container-page: 1320px; /* max-w-page */
+  --container-measure: 38em; /* max-w-measure: about 38 Chinese characters per line at the element's own size */
+
+  /* Motion. Springs driven from JS are in lib/motion.ts. */
+  --ease-reveal: cubic-bezier(0.16, 0.84, 0.24, 1); /* entrances */
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1); /* small UI changes: cards opening, arrows */
+}
+
+@layer base {
+  :root {
+    /* Raw palette: every color is written once, here. */
+    --light-bg: #f1f1ec;
+    --light-fg: #0c0c0c;
+    --light-muted: #55554f;
+    --light-line: #d7d7cf;
+    --light-surface: #e6e6df;
+    --light-accent: #c8f31d; /* too faint as text or a thin line on the light ground: fills only */
+    --light-accent-text: #4a6400;
+    --light-accent-ink: #0c0c0c;
+    --light-prose: #1b1b19;
+
+    --dark-bg: #0a0a0a;
+    --dark-fg: #f4f4f0;
+    --dark-muted: #9a9a92;
+    --dark-line: #242421;
+    --dark-surface: #141412;
+    --dark-accent: #d4ff3a;
+    --dark-accent-text: #d4ff3a;
+    --dark-accent-ink: #0a0a0a;
+    --dark-prose: #d9d9d2; /* bright text on black glows and reads heavier, so body copy steps down */
+
+    /* Semantic tokens, light by default */
+    --bg: var(--light-bg);
+    --fg: var(--light-fg); /* headings and UI text */
+    --muted: var(--light-muted); /* secondary text */
+    --line: var(--light-line); /* rules and borders */
+    --surface: var(--light-surface); /* quiet panels: blockquotes, inline code */
+    --accent: var(--light-accent); /* the lime, as a fill */
+    --accent-text: var(--light-accent-text); /* the accent as text, thin lines, focus rings */
+    --accent-ink: var(--light-accent-ink); /* text on an accent fill */
+    --prose: var(--light-prose); /* long-form body text */
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: var(--dark-bg);
+      --fg: var(--dark-fg);
+      --muted: var(--dark-muted);
+      --line: var(--dark-line);
+      --surface: var(--dark-surface);
+      --accent: var(--dark-accent);
+      --accent-text: var(--dark-accent-text);
+      --accent-ink: var(--dark-accent-ink);
+      --prose: var(--dark-prose);
+      color-scheme: dark;
+    }
+  }
+
+  /* data-theme on <html> is the hook for the dark-mode toggle (stage 4).
+     .stage is a block that stays dark in both themes: the homepage hero, code panels. */
+  :root[data-theme="dark"],
+  .stage {
+    --bg: var(--dark-bg);
+    --fg: var(--dark-fg);
+    --muted: var(--dark-muted);
+    --line: var(--dark-line);
+    --surface: var(--dark-surface);
+    --accent: var(--dark-accent);
+    --accent-text: var(--dark-accent-text);
+    --accent-ink: var(--dark-accent-ink);
+    --prose: var(--dark-prose);
+    color-scheme: dark;
+  }
+  .stage {
+    background-color: var(--bg);
+    color: var(--fg);
+  }
+
+  /* Chinese reads better with more leading and a touch of tracking; a nested lang="en" block switches back. */
+  [lang|="zh"] {
+    --leading-read: 1.9;
+    --tracking-read: 0.015em;
+  }
+  [lang|="en"] {
+    --leading-read: 1.75;
+    --tracking-read: 0;
+  }
+
+  @media (width < 48rem) {
+    :root {
+      --spacing-nav: 64px;
+    }
+  }
+
+  html {
+    background-color: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Anton has one weight and Plex Mono two: never fake a bolder one. */
+    font-synthesis-weight: none;
+  }
+  ::selection {
+    background-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Unlayered so it beats the utility: Chinese text keeps Latin names and units as written (Next.js, 30 s). */
+.uppercase:lang(zh) {
+  text-transform: none;
+}
