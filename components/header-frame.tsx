@@ -7,7 +7,8 @@ function subscribe(onChange: () => void) {
   return () => window.removeEventListener("scroll", onChange);
 }
 
-// The fixed header gains its bottom rule once content has scrolled under it.
+// The fixed header gains its bottom rule once content has scrolled under it, and turns dark over the
+// homepage hero (data-hero-tint, see app/globals.css).
 export function HeaderFrame({ className, children }: { className: string; children: React.ReactNode }) {
   const scrolled = useSyncExternalStore(
     subscribe,
@@ -15,7 +16,7 @@ export function HeaderFrame({ className, children }: { className: string; childr
     () => false,
   );
   return (
-    <header className={className} data-scrolled={scrolled || undefined}>
+    <header className={className} data-scrolled={scrolled || undefined} data-hero-tint>
       {children}
     </header>
   );

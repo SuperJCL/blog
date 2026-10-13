@@ -43,6 +43,12 @@
   /* Type scale */
   --text-display: clamp(2.8rem, 1rem + 7vw, 8.4rem);
   --text-display--line-height: 0.92;
+  --text-title: clamp(2.2rem, 0.8rem + 5.5vw, 6.6rem); /* homepage screen titles */
+  --text-title--line-height: 0.92;
+  --text-hero: clamp(3.4rem, 1rem + 7.2vw, 8.6rem); /* the hero's accent line */
+  --text-hero--line-height: 0.9;
+  --text-hero-lead: clamp(1.6rem, 0.8rem + 2.6vw, 3.4rem); /* the line above it */
+  --text-hero-lead--line-height: 0.9;
   --text-h2: clamp(1.9rem, 1rem + 3vw, 3.4rem);
   --text-h2--line-height: 1.1;
   --text-lede: clamp(1.05rem, 0.95rem + 0.5vw, 1.35rem);
@@ -57,6 +63,8 @@
   --spacing-gutter: clamp(16px, 5vw, 72px); /* page side padding */
   --spacing-nav: 72px; /* fixed header height */
   --spacing-page-top: calc(var(--spacing-nav) + clamp(2rem, 6vh, 4.5rem)); /* normal pages: header plus air */
+  --spacing-slide-top: calc(var(--spacing-nav) + 4vh); /* homepage screens */
+  --spacing-slide-bottom: clamp(3rem, 10vh, 6.5rem);
   --container-page: 1320px; /* max-w-page */
   --container-measure: 38em; /* max-w-measure: about 38 Chinese characters per line at the element's own size */
 
@@ -117,9 +125,11 @@
   }
 
   /* data-theme on <html> is the hook for the dark-mode toggle (stage 4).
-     .stage is a block that stays dark in both themes: the homepage hero, code panels. */
+     .stage is a block that stays dark in both themes: the homepage hero, code panels.
+     [data-hero-tint] elements (header, screen dots) turn dark while the homepage hero is showing. */
   :root[data-theme="dark"],
-  .stage {
+  .stage,
+  :root[data-hero-on] [data-hero-tint] {
     --bg: var(--dark-bg);
     --fg: var(--dark-fg);
     --muted: var(--dark-muted);
@@ -185,6 +195,86 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+/* Matches while the homepage hero is on screen (set by the slide pager). */
+@custom-variant hero-on (:root[data-hero-on] &);
+
+/* Display type: Anton, uppercase in English; Chinese in Noto Sans SC 900, never uppercased. */
+@utility type-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  &:lang(zh) {
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+/* The small mono line above a title: section name, counters. Color is set where it is used. */
+@utility type-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  &:lang(zh) {
+    text-transform: none;
+  }
+}
+
+/* Field labels (role, stack, dates) and tags. */
+@utility type-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  &:lang(zh) {
+    text-transform: none;
+  }
+}
+
+/* Outlined display line. Outlined Chinese glyphs show their overlapping strokes, so Chinese stays solid. */
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--fg);
+  &:lang(zh) {
+    color: var(--fg);
+    -webkit-text-stroke: 0;
+    font-weight: 700;
+  }
+}
+
+/* Homepage screen container: native snap for touch; the spring pager turns snap off while it runs. */
+@utility slide-scroller {
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-snap-type: y mandatory;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  &:focus {
+    outline: none;
+  }
+  /* Landscape phones: a screen can be taller than the viewport, so the snap isn't forced. */
+  @media (max-height: 520px) {
+    scroll-snap-type: y proximity;
+  }
+}
+
+/* Keeps screen text readable over a full-bleed visual. */
+@utility scrim-slide {
+  background:
+    radial-gradient(110% 85% at 50% 45%, transparent 45%, color-mix(in oklab, var(--bg) 88%, transparent) 100%),
+    linear-gradient(to top, color-mix(in oklab, var(--bg) 92%, transparent), transparent 50%);
 }
 
 /* Unlayered so it beats the utility: Chinese text keeps Latin names and units as written (Next.js, 30 s). */

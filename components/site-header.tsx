@@ -22,7 +22,7 @@ export async function SiteHeader() {
   const switcherClass = `${pill} inline-flex border border-line hover:border-fg`;
 
   return (
-    <HeaderFrame className="fixed inset-x-0 top-0 z-20 flex h-nav items-center justify-between gap-4 border-b border-transparent bg-bg/85 px-gutter backdrop-blur-md transition-colors data-scrolled:border-line">
+    <HeaderFrame className="fixed inset-x-0 top-0 z-20 flex h-nav items-center justify-between gap-4 border-b border-transparent bg-bg/85 px-gutter text-fg backdrop-blur-md transition-colors data-scrolled:border-line hero-on:bg-transparent hero-on:bg-linear-to-b hero-on:from-bg/80 hero-on:to-transparent hero-on:backdrop-blur-none">
       <Link href={`/${locale}`} className="flex items-center gap-2 font-display text-xl leading-none uppercase">
         <span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-accent text-sm text-accent-ink">
           ✦

@@ -19,12 +19,30 @@ const en = {
     label: "Switch language",
   },
   home: {
-    title: "Chenglin Jiang",
-    intro: "Frontend engineer focused on visualization.",
+    heroCta: "View projects",
+    skillsKicker: "What I do",
+    skillsTitle: "Three kinds of work",
+    featured: "Selected work",
+    viewCase: "Read the case study",
+    postsTitle: "Latest writing",
+    contactKicker: "About · Contact",
+    contactTitle: "Get in touch",
+    aboutMore: "More about me",
+    screens: "Screens",
+    // Dot labels; work screens add their number: "Project 1".
+    screen: { hero: "Intro", skills: "What I do", work: "Project", posts: "Writing", contact: "Contact" },
   },
   projects: {
     title: "Projects",
     intro: "Selected work, coming soon.",
+    confidential: "Screenshots and real data are not shown for this project",
+    role: "Role",
+    stack: "Stack",
+    period: "Dates",
+    present: "Present",
+  },
+  contact: {
+    email: "Email",
   },
   blog: {
     title: "Blog",
