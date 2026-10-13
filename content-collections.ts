@@ -1,9 +1,17 @@
 import { defineCollection, defineConfig } from "@content-collections/core";
 import { compileMDX } from "@content-collections/mdx";
 import { z } from "zod";
-import { hasLocale } from "./i18n/config";
+import { hasLocale, locales } from "./i18n/config";
 
 // Files are named `<slug>.<lang>.mdx`. Files that share a slug are translations of each other.
+function splitPath(meta: { path: string; filePath: string }, kind: string) {
+  const [slug, lang, ...rest] = meta.path.split(".");
+  if (!slug || !lang || rest.length > 0 || !hasLocale(lang)) {
+    throw new Error(`${kind} file name must be <slug>.<lang>.mdx with lang en or zh: ${meta.filePath}`);
+  }
+  return { slug, lang };
+}
+
 const posts = defineCollection({
   name: "posts",
   directory: "content/posts",
@@ -17,11 +25,51 @@ const posts = defineCollection({
     content: z.string(),
   }),
   transform: async (document, context) => {
-    const [slug, lang, ...rest] = document._meta.path.split(".");
-    if (!slug || !lang || rest.length > 0 || !hasLocale(lang)) {
-      throw new Error(
-        `Post file name must be <slug>.<lang>.mdx with lang en or zh: ${document._meta.filePath}`,
-      );
+    const { slug, lang } = splitPath(document._meta, "Post");
+    const body = await compileMDX(context, document);
+    return { ...document, slug, lang, body };
+  },
+});
+
+const yearMonth = z.string().regex(/^\d{4}-\d{2}$/, "use YYYY-MM");
+
+// The body is exactly the four case-study sections, in this order (CLAUDE.md, 设计).
+const caseSections = /^\s*<Problem>[\s\S]*?<\/Problem>\s*<Role>[\s\S]*?<\/Role>\s*<Approach>[\s\S]*?<\/Approach>\s*<Result>[\s\S]*?<\/Result>\s*$/;
+
+const projects = defineCollection({
+  name: "projects",
+  directory: "content/projects",
+  include: "*.mdx",
+  schema: z.object({
+    title: z.string(),
+    summary: z.string(),
+    start: yearMonth,
+    end: yearMonth.optional(), // omitted while ongoing
+    role: z.string(),
+    company: z.string(),
+    stack: z.array(z.string()).min(1),
+    // Public-safety work: no screenshots and no real data, only an abstract diagram (CLAUDE.md, 内容规则).
+    confidential: z.boolean().default(false),
+    cover: z.string().optional(), // screenshot path under public/; a placeholder is shown until there is one
+    featured: z.boolean().default(false),
+    order: z.number().int(),
+    stats: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
+    content: z.string(),
+  }),
+  transform: async (document, context) => {
+    const { slug, lang } = splitPath(document._meta, "Project");
+    const file = document._meta.filePath;
+    if (document.confidential && document.cover) {
+      throw new Error(`A confidential project can't have a screenshot cover: ${file}`);
+    }
+    if (!caseSections.test(document.content)) {
+      throw new Error(`Project body must be <Problem>, <Role>, <Approach>, <Result>, in that order: ${file}`);
+    }
+    // Unlike posts, every project is published in both languages.
+    const versions = (await context.collection.documents()).map((d) => d._meta.path.split("."));
+    const missing = locales.filter((l) => !versions.some(([s, v]) => s === slug && v === l));
+    if (missing.length > 0) {
+      throw new Error(`Project "${slug}" is missing its ${missing.join(", ")} version: ${file}`);
     }
     const body = await compileMDX(context, document);
     return { ...document, slug, lang, body };
@@ -29,5 +77,5 @@ const posts = defineCollection({
 });
 
 export default defineConfig({
-  content: [posts],
+  content: [posts, projects],
 });

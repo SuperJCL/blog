@@ -1,0 +1,58 @@
+---
+title: Image-based Search Product
+summary: "A standalone product for campus clients: upload a photo, search people and vehicle captures by their features, plot them on a map, and archive the results and trajectories."
+start: "2021-09"
+end: "2022-11"
+role: One of the main developers
+company: Uniview
+stack: [Nest.js, Docker, Jenkins, Shell]
+featured: true
+order: 3
+stats:
+  - { value: 6 months, label: To the first release }
+  - { value: Shipped, label: "On sale, and still iterating" }
+---
+
+<Problem>
+
+Campus clients needed a product they could run on their own: upload a photo, search people and vehicle captures by their features, plot the matches on a map, and archive the results and trajectories.
+
+</Problem>
+
+<Role>
+
+One of the main developers. On this project I moved from frontend to full stack: about half of the Nest.js backend APIs and their docs, the archive module's frontend, and the product's packaging and installation.
+
+</Role>
+
+<Approach>
+
+### Backend APIs
+
+I wrote about half of the backend APIs in Nest.js and kept their documentation up to date.
+
+### Archive module
+
+I built the frontend of the archive module, where search results and trajectories are filed.
+
+### Packaging and delivery
+
+The product had to install on its own, so everything from build to install was automated: Jenkins builds, Docker images, and install, upgrade and uninstall scripts.
+
+<Flow caption="Figure 1 · From build to standalone delivery.">
+  <Step label="Build" title="Jenkins" />
+  <Arrow />
+  <Step label="Image" title="Docker" />
+  <Arrow />
+  <Step label="Package" title="Install · upgrade · uninstall scripts" />
+  <Arrow />
+  <Step label="Delivery" title="Standalone install" highlight />
+</Flow>
+
+</Approach>
+
+<Result>
+
+Shipped the first release in six months; it went on sale and kept improving afterwards.
+
+</Result>

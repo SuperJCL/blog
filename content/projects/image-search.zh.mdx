@@ -1,0 +1,58 @@
+---
+title: 以图检索的全栈产品
+summary: 面向园区客户的独立交付产品：上传图片，按特征检索人和车的抓拍记录，在地图上标注，并把结果和轨迹归档。
+start: "2021-09"
+end: "2022-11"
+role: 主要开发人之一
+company: 宇视科技
+stack: [Nest.js, Docker, Jenkins, Shell]
+featured: true
+order: 3
+stats:
+  - { value: 6 个月, label: 完成首个版本的交付 }
+  - { value: 上线, label: 正式销售，持续迭代 }
+---
+
+<Problem>
+
+园区客户需要一套能独立交付的产品：上传一张图片，按特征检索人和车的抓拍记录，在地图上标注出来，并把结果和轨迹归档。
+
+</Problem>
+
+<Role>
+
+主要开发人之一。这个项目里我从前端转向全栈：负责约一半的 Nest 服务端接口和接口文档、归档模块的前端页面，以及产品的打包和安装部署。
+
+</Role>
+
+<Approach>
+
+### 服务端接口
+
+用 Nest 写了约一半的服务端接口，并维护对应的接口文档。
+
+### 归档模块
+
+负责归档模块的前端页面，把检索结果和轨迹整理归档。
+
+### 打包和交付
+
+产品要能独立交付，所以从构建到安装都要自动化：用 Jenkins 构建，打成 Docker 镜像，再配上安装、升级、卸载脚本。
+
+<Flow caption="图 1 · 从构建到独立交付的流程。">
+  <Step label="构建" title="Jenkins" />
+  <Arrow />
+  <Step label="镜像" title="Docker" />
+  <Arrow />
+  <Step label="安装包" title="安装 · 升级 · 卸载脚本" />
+  <Arrow />
+  <Step label="交付" title="独立部署" highlight />
+</Flow>
+
+</Approach>
+
+<Result>
+
+半年完成首个版本的交付，正式上线销售，之后持续迭代优化。
+
+</Result>

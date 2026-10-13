@@ -2,6 +2,9 @@ export const locales = ["en", "zh"] as const;
 
 export type Locale = (typeof locales)[number];
 
+// A piece of content written in every language, e.g. { en: "Seattle, WA", zh: "西雅图" }.
+export type Localized<T = string> = Record<Locale, T>;
+
 export const defaultLocale: Locale = "en";
 
 // Set when the user switches language; takes priority over Accept-Language.

@@ -1,0 +1,61 @@
+---
+title: 云渲染 3D 地图
+summary: 在服务器上用虚幻引擎渲染，通过像素流送推到浏览器：不用高性能显卡，也能在网页里用上高质量的 3D 地图。
+start: "2023-03"
+end: "2025-03"
+role: 主要开发人
+company: 宇视科技
+stack: [Unreal Engine, 蓝图, Pixel Streaming, TypeScript, React]
+featured: true
+order: 1
+stats:
+  - { value: "2D → 3D", label: 公司的地图从 2D 推进到 3D }
+  - { value: "10+", label: 落地的客户项目 }
+  - { value: "5 类", label: 博物馆、机场、高校、产业园、会展中心 }
+---
+
+<Problem>
+
+公司平台的地图以 2D 为主。客户想要业内主流的高质量 3D 效果，但不能要求每台电脑都配高性能显卡。
+
+</Problem>
+
+<Role>
+
+主要开发人。负责虚幻引擎里的地图功能和蓝图接口、网页端的地图插件，以及云渲染配置中心。
+
+</Role>
+
+<Approach>
+
+### 渲染放在服务器上
+
+用虚幻引擎自研 3D 地图，通过像素流送把渲染好的画面以视频流推到网页。浏览器只负责播放画面、回传操作，客户电脑不需要高性能显卡。
+
+<Flow caption="图 1 · 画面以视频流从渲染机推到浏览器，鼠标操作和插件指令回传给引擎。">
+  <Step label="配置中心" title="管理地图实例" />
+  <Arrow label="管理" />
+  <Step label="渲染机" title="虚幻引擎地图" detail="蓝图封装接口" />
+  <Arrow label="像素流送" both />
+  <Step label="浏览器" title="React 地图插件" detail="点位 · 漫游 · 楼层拆分" highlight />
+</Flow>
+
+### 一套地图插件
+
+用蓝图把引擎能力封装成接口，再在 TypeScript/React 里包装成统一的地图插件，业务页面都按同一套接口调用：
+
+- 设备点位的标注与控制
+- 漫游和环视两种视角
+- 楼层爆炸拆分
+
+### 云渲染配置中心
+
+配置中心用来管理渲染机上的地图实例。
+
+</Approach>
+
+<Result>
+
+这套方案落地了博物馆、机场、高校、产业园、会展中心等十余个客户项目。
+
+</Result>

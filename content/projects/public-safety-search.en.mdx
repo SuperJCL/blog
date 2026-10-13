@@ -1,0 +1,55 @@
+---
+title: Visual Search over Public-Safety Data
+summary: "For a city-level public-safety technology competition: composable visual operators that find target records among millions of captures and alerts, quickly and accurately."
+start: "2021-04"
+end: "2021-07"
+role: Core frontend developer
+company: Uniview
+stack: [React, SQL]
+confidential: true
+featured: true
+order: 2
+stats:
+  - { value: "< 30 s", label: Search and filtering over 100k–1M records }
+  - { value: Won, label: City-level technology competition }
+---
+
+<Problem>
+
+A city-level public-safety technology competition asked teams to find target records among the city's millions of capture and alert entries, quickly and accurately, by combining visual operators, models and conditions.
+
+</Problem>
+
+<Role>
+
+Core frontend developer. I built the interaction logic for composing operators and running searches, and in this cross-team project I also adjusted the SQL and helped optimize the queries.
+
+</Role>
+
+<Approach>
+
+### Search conditions as composable operators
+
+I implemented the interaction logic for composing operators and running searches: operators, models and conditions combine freely in the interface, and a finished combination runs as a search.
+
+<Flow caption="Figure 1 · The stages from composed conditions to results. Stages only, no real data.">
+  <Step label="Data" title="Captures and alerts" detail="Millions of rows" />
+  <Arrow />
+  <Step label="Compose" title="Operators · models · conditions" />
+  <Arrow />
+  <Step label="Search" title="Intelligent APIs · SQL" />
+  <Arrow />
+  <Step label="Result" title="Target records" detail="Under 30 s" highlight />
+</Flow>
+
+### Optimizing queries across teams
+
+The work was split across departments: the big-data team owned the intelligent-analysis APIs, and I built the frontend for composing operators and running searches, which also meant adjusting the SQL. It was my first production SQL. Together with the big-data team, I tracked down slow queries and optimized searches over millions of rows.
+
+</Approach>
+
+<Result>
+
+The team won the competition and was commended by the municipal police bureau, with a company award as well.
+
+</Result>

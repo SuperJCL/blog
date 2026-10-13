@@ -1,0 +1,61 @@
+---
+title: Cloud-rendered 3D Map
+summary: Rendered on servers with Unreal Engine and streamed to the browser with Pixel Streaming, so high-fidelity 3D maps work without a powerful GPU.
+start: "2023-03"
+end: "2025-03"
+role: Lead developer
+company: Uniview
+stack: [Unreal Engine, Blueprints, Pixel Streaming, TypeScript, React]
+featured: true
+order: 1
+stats:
+  - { value: "2D → 3D", label: The company's maps moved from 2D to 3D }
+  - { value: "10+", label: Client deployments }
+  - { value: "5", label: "Sectors: museums, airports, universities, industrial parks, convention centres" }
+---
+
+<Problem>
+
+The platform's maps were mostly 2D. Clients wanted the high-fidelity 3D that had become standard in the industry, without needing a powerful GPU on every machine.
+
+</Problem>
+
+<Role>
+
+Lead developer. I built the map features and Blueprint interfaces in Unreal Engine, the web map plugin, and the cloud-rendering configuration console.
+
+</Role>
+
+<Approach>
+
+### Render on the server
+
+I built the 3D map in Unreal Engine and used Pixel Streaming to send the rendered frames to the browser as a video stream. The browser only plays the stream and sends input back, so client machines don't need a powerful GPU.
+
+<Flow caption="Figure 1 · Frames stream from the render server to the browser; mouse input and plugin commands go back to the engine.">
+  <Step label="Console" title="Manages map instances" />
+  <Arrow label="manages" />
+  <Step label="Render server" title="Unreal Engine map" detail="Blueprint interfaces" />
+  <Arrow label="Pixel Streaming" both />
+  <Step label="Browser" title="React map plugin" detail="Markers · fly-through · floors" highlight />
+</Flow>
+
+### One map plugin
+
+Blueprints expose the engine's features as interfaces, and a TypeScript/React plugin wraps them so every product page calls the same API:
+
+- Placing and controlling device markers
+- Fly-through and orbit cameras
+- Exploded floor views
+
+### Configuration console
+
+A console for managing the map instances on the render servers.
+
+</Approach>
+
+<Result>
+
+Deployed in more than ten client projects across museums, airports, universities, industrial parks and convention centres.
+
+</Result>
