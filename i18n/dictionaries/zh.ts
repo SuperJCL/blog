@@ -35,7 +35,9 @@ const zh: Dictionary = {
   },
   projects: {
     title: "作品",
-    intro: "精选作品，整理中。",
+    intro: "三个精选案例，每个都按问题、我的角色、做法和结果来写；其他做过的项目各用一句话概括。",
+    casesTitle: "精选案例",
+    otherTitle: "其他项目",
     confidential: "本项目不展示截图和真实数据",
     role: "角色",
     stack: "技术栈",

@@ -35,7 +35,10 @@ const en = {
   },
   projects: {
     title: "Projects",
-    intro: "Selected work, coming soon.",
+    intro:
+      "Three case studies, each told as the problem, my role, the approach and the result, followed by the rest of my work in a line each.",
+    casesTitle: "Case studies",
+    otherTitle: "Other work",
     confidential: "Screenshots and real data are not shown for this project",
     role: "Role",
     stack: "Stack",
