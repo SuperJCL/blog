@@ -51,6 +51,10 @@
   --text-hero--line-height: 0.9;
   --text-hero-lead: clamp(1.6rem, 0.8rem + 2.6vw, 3.4rem); /* the line above it */
   --text-hero-lead--line-height: 0.9;
+  --text-section: clamp(1.7rem, 1rem + 1.8vw, 2.6rem); /* case-study section labels */
+  --text-section--line-height: 1;
+  --text-stat: clamp(2.4rem, 1.4rem + 2.6vw, 4rem); /* key figures */
+  --text-stat--line-height: 0.95;
   --text-h2: clamp(1.9rem, 1rem + 3vw, 3.4rem);
   --text-h2--line-height: 1.1;
   --text-lede: clamp(1.05rem, 0.95rem + 0.5vw, 1.35rem);
@@ -67,6 +71,8 @@
   --spacing-page-top: calc(var(--spacing-nav) + clamp(2rem, 6vh, 4.5rem)); /* normal pages: header plus air */
   --spacing-slide-top: calc(var(--spacing-nav) + 4vh); /* homepage screens */
   --spacing-slide-bottom: clamp(3rem, 10vh, 6.5rem);
+  --spacing-section: clamp(2.2rem, 6vh, 3.8rem); /* vertical padding of case-study sections */
+  --spacing-sticky: calc(var(--spacing-nav) + 1.5rem); /* where sticky labels stop, below the header */
   --container-page: 1320px; /* max-w-page */
   --container-measure: 38em; /* max-w-measure: about 38 Chinese characters per line at the element's own size */
 
@@ -201,6 +207,9 @@
 
 /* Matches while the homepage hero is on screen (set by the slide pager). */
 @custom-variant hero-on (:root[data-hero-on] &);
+
+/* Chinese text, e.g. `zh:font-black` for Noto Sans SC headings next to Anton. */
+@custom-variant zh (&:lang(zh));
 
 /* Display type: Anton, uppercase in English; Chinese in Noto Sans SC 900, never uppercased. */
 @utility type-display {

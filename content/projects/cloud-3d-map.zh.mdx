@@ -8,10 +8,10 @@ company: 宇视科技
 stack: [Unreal Engine, 蓝图, Pixel Streaming, TypeScript, React]
 featured: true
 order: 1
-stats:
-  - { value: "2D → 3D", label: 公司的地图从 2D 推进到 3D }
-  - { value: "10+", label: 落地的客户项目 }
-  - { value: "5 类", label: 博物馆、机场、高校、产业园、会展中心 }
+cover:
+  src: /projects/cloud-3d-map/campus.webp
+  alt: 自研 3D 地图中的科研园区，楼体上标着楼层，右侧是楼层选择器
+  caption: 科研园区项目：楼层标注和楼层选择。
 ---
 
 <Problem>
@@ -48,14 +48,44 @@ stats:
 - 漫游和环视两种视角
 - 楼层爆炸拆分
 
+<Figure
+  src="/projects/cloud-3d-map/config.webp"
+  width={1514}
+  height={918}
+  alt="平台的地图配置端：左侧是配置菜单，地图上方是工具栏"
+  caption="地图配置端：逃生路线、漫游、环视、周界、点位标注、区域绘制等工具都在这里配置。"
+/>
+
 ### 云渲染配置中心
 
 配置中心用来管理渲染机上的地图实例。
+
+<Figure
+  src="/projects/cloud-3d-map/instances.webp"
+  width={1687}
+  height={620}
+  alt="配置中心页面：引擎实例数量统计、引擎配置和渲染节点列表"
+  caption="配置中心：查看渲染机上的引擎实例，设置空闲实例自动关闭、帧率和鼠标移动倍率。服务器地址等信息已打码。"
+/>
 
 </Approach>
 
 <Result>
 
+<Stats>
+  <Stat value="2D → 3D">公司的地图从 2D 推进到 3D</Stat>
+  <Stat value="10+">落地的客户项目</Stat>
+  <Stat value="5 类">博物馆、机场、高校、产业园、会展中心</Stat>
+</Stats>
+
 这套方案落地了博物馆、机场、高校、产业园、会展中心等十余个客户项目。
+
+<Figure
+  src="/projects/cloud-3d-map/dashboard.webp"
+  width={1200}
+  height={570}
+  alt="物流园区数字平台：中间是园区 3D 地图，两侧是设备、用电和用水的数据面板"
+  caption="落地项目之一：物流园区的数字平台，3D 地图和业务数据放在同一块大屏上。"
+/>
 
 </Result>

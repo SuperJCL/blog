@@ -8,9 +8,10 @@ company: 宇视科技
 stack: [React, Nest.js, Docker, Jenkins, Shell]
 featured: true
 order: 3
-stats:
-  - { value: 6 个月, label: 完成首个版本的交付 }
-  - { value: 上线, label: 正式销售，持续迭代 }
+cover:
+  src: /projects/image-search/results.webp
+  alt: 以图检索界面：左侧上传照片并设置条件，上方是按相似度排列的抓拍结果，下方是楼层地图
+  caption: 检索界面测试图：上传照片后按相似度返回抓拍结果，并在地图上标注。人脸已打码。
 ---
 
 <Problem>
@@ -35,6 +36,14 @@ stats:
 
 负责归档模块的前端页面，把检索结果和轨迹整理归档。
 
+<Figure
+  src="/projects/image-search/archive-flow.webp"
+  width={1220}
+  height={624}
+  alt="归档模块接口流程图：归档、查询、删除、导出四条流程，连接数据库和服务器上的归档文件夹"
+  caption="归档模块的接口流程：归档、查询、删除和导出。"
+/>
+
 ### 打包和交付
 
 产品要能独立交付，所以从构建到安装都要自动化：用 Jenkins 构建，打成 Docker 镜像，再配上安装、升级、卸载脚本。
@@ -52,6 +61,11 @@ stats:
 </Approach>
 
 <Result>
+
+<Stats>
+  <Stat value="6 个月">完成首个版本的交付</Stat>
+  <Stat value="上线">正式销售，持续迭代</Stat>
+</Stats>
 
 半年完成首个版本的交付，正式上线销售，之后持续迭代优化。
 

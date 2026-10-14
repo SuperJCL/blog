@@ -50,10 +50,12 @@ const projects = defineCollection({
     stack: z.array(z.string()).min(1),
     // Public-safety work: no screenshots and no real data, only an abstract diagram (CLAUDE.md, 内容规则).
     confidential: z.boolean().default(false),
-    cover: z.string().optional(), // screenshot path under public/; a placeholder is shown until there is one
+    // A screenshot under public/, shown 16:9 (cropped to fit). Without one the page draws a generated terrain.
+    cover: z
+      .object({ src: z.string().startsWith("/"), alt: z.string(), caption: z.string().optional() })
+      .optional(),
     featured: z.boolean().default(false),
     order: z.number().int(),
-    stats: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
     content: z.string(),
   }),
   transform: async (document, context) => {

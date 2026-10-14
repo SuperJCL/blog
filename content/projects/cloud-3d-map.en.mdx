@@ -8,10 +8,10 @@ company: Uniview
 stack: [Unreal Engine, Blueprints, Pixel Streaming, TypeScript, React]
 featured: true
 order: 1
-stats:
-  - { value: "2D → 3D", label: The company's maps moved from 2D to 3D }
-  - { value: "10+", label: Client deployments }
-  - { value: "5", label: "Sectors: museums, airports, universities, industrial parks, convention centres" }
+cover:
+  src: /projects/cloud-3d-map/campus.webp
+  alt: A research campus in the self-developed 3D map, with floor labels on the buildings and a floor picker on the right
+  caption: A research campus deployment, with floor labels and a floor picker.
 ---
 
 <Problem>
@@ -48,14 +48,44 @@ Blueprints expose the engine's features as interfaces, and a TypeScript/React pl
 - Fly-through and orbit cameras
 - Exploded floor views
 
+<Figure
+  src="/projects/cloud-3d-map/config.webp"
+  width={1514}
+  height={918}
+  alt="The platform's map configuration client: a settings menu on the left and a toolbar above the map"
+  caption="The map configuration client, where escape routes, fly-through, orbit, perimeters, markers and areas are set up."
+/>
+
 ### Configuration console
 
 A console for managing the map instances on the render servers.
+
+<Figure
+  src="/projects/cloud-3d-map/instances.webp"
+  width={1687}
+  height={620}
+  alt="The configuration console: engine instance counts, engine settings and the list of render nodes"
+  caption="The console lists the engine instances on each render server and sets idle shutdown, frame rate and mouse sensitivity. Server addresses are pixelated."
+/>
 
 </Approach>
 
 <Result>
 
+<Stats>
+  <Stat value="2D → 3D">The company's maps moved from 2D to 3D</Stat>
+  <Stat value="10+">Client deployments</Stat>
+  <Stat value="5">Sectors: museums, airports, universities, industrial parks, convention centres</Stat>
+</Stats>
+
 Deployed in more than ten client projects across museums, airports, universities, industrial parks and convention centres.
+
+<Figure
+  src="/projects/cloud-3d-map/dashboard.webp"
+  width={1200}
+  height={570}
+  alt="A logistics park's digital platform: the park's 3D map in the middle, device, power and water panels on both sides"
+  caption="One of the deployments: a logistics park's digital platform, with the 3D map and operations data on one screen."
+/>
 
 </Result>

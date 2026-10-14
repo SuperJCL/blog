@@ -1,0 +1,123 @@
+/*
+ * Long-form text from MDX: case-study sections and blog posts. Put `prose text-read` on the container.
+ * Ported from the style board; colors and fonts come from the tokens in globals.css.
+ */
+
+.prose {
+  color: var(--prose);
+  line-height: var(--leading-read);
+  letter-spacing: var(--tracking-read);
+  counter-reset: h2;
+}
+.prose :is(h2, h3, strong) {
+  color: var(--fg);
+}
+.prose > * + * {
+  margin-top: 1.1em;
+}
+.prose > :first-child {
+  margin-top: 0;
+}
+.prose > :where(p, ul:not(.stats), ol, blockquote) {
+  max-width: var(--container-measure);
+}
+.prose :is(p, li) {
+  text-wrap: pretty;
+}
+
+/* Headings: h2 gets a running number in the accent, as in the style board. */
+.prose h2 {
+  margin-top: 2.6em;
+  font: 400 1.75em/1.1 var(--font-display);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  scroll-margin-top: calc(var(--spacing-nav) + 1.5rem);
+}
+.prose h2:lang(zh) {
+  font-size: 1.5em;
+  font-weight: 900;
+  line-height: 1.3;
+  text-transform: none;
+}
+.prose h2::before {
+  counter-increment: h2;
+  content: counter(h2, decimal-leading-zero);
+  display: block;
+  margin-bottom: 0.7rem;
+  font: 500 0.75rem/1 var(--font-mono);
+  letter-spacing: 0.12em;
+  color: var(--accent-text);
+}
+.prose h2 code {
+  text-transform: none;
+}
+.prose h3 {
+  margin-top: 2em;
+  font-size: 1.12em;
+  font-weight: 650;
+  line-height: 1.4;
+  text-wrap: balance;
+  scroll-margin-top: calc(var(--spacing-nav) + 1.5rem);
+}
+.prose :is(h2, h3) + * {
+  margin-top: 0.75em;
+}
+
+.prose a {
+  color: var(--fg);
+  text-decoration: underline 2px var(--accent-text);
+  text-underline-offset: 0.22em;
+  transition: background-color 0.15s, color 0.15s;
+}
+.prose a:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-decoration-color: transparent;
+}
+.prose strong {
+  font-weight: 650;
+}
+
+/* Lists; .stats (key figures) is a grid of its own. */
+.prose ul:not(.stats) {
+  padding-left: 1.4em;
+  list-style: disc;
+}
+.prose ol {
+  padding-left: 1.4em;
+  list-style: decimal;
+}
+.prose :is(ul:not(.stats), ol) > li + li {
+  margin-top: 0.45em;
+}
+.prose li::marker {
+  color: var(--accent-text);
+}
+.prose ol > li::marker {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.prose blockquote {
+  padding: 0.9em 1.2em;
+  background: var(--surface);
+  border-left: 3px solid var(--accent-text);
+}
+.prose :not(pre) > code {
+  padding: 0.12em 0.38em;
+  font: 400 0.86em var(--font-mono);
+  letter-spacing: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+/* Figures and diagrams get more room around them than paragraphs. */
+.prose > figure {
+  margin-top: 2em;
+}
+.prose > figure + :not(h2, h3) {
+  margin-top: 1.6em;
+}

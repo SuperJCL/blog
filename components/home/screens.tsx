@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Hero } from "@/components/home/hero";
 import { SceneCanvas } from "@/components/scene-canvas";
@@ -64,6 +65,7 @@ type WorkProps = ScreenProps & { project: Project; index: number; total: number 
 
 export function WorkScreen({ dict, locale, project, index, total }: WorkProps) {
   const id = `work-${index + 1}`;
+  const caseHref = `/${locale}/projects/${project.slug}`;
   const meta = [
     { label: dict.projects.role, value: project.role },
     { label: dict.projects.stack, value: project.stack.join(" · ") },
@@ -71,11 +73,32 @@ export function WorkScreen({ dict, locale, project, index, total }: WorkProps) {
   ];
   return (
     <section id={id} aria-labelledby={`${id}-title`} className={`${screen} justify-end`}>
-      {/* No screenshots yet: a generated terrain, or an abstract diagram for confidential work. */}
-      <div className="absolute inset-0 translate-y-(--vy) will-change-transform">
-        <SceneCanvas scene={project.confidential ? "diagram" : "terrain"} seed={seedFor(project.slug)} room />
-      </div>
-      <div className="pointer-events-none absolute inset-0 scrim-slide" />
+      {/* A screenshot sits in a frame (too busy to sit under text); otherwise a generated terrain, or an abstract
+          diagram for confidential work, fills the screen behind the text. The frame repeats the case link, so
+          it's hidden from screen readers and the tab order. */}
+      {project.cover ? (
+        <Link
+          href={caseHref}
+          tabIndex={-1}
+          aria-hidden="true"
+          className="group relative mb-6 block aspect-video w-full translate-y-(--vy) overflow-hidden border border-line bg-surface will-change-transform md:absolute md:top-slide-top md:right-gutter md:mb-0 md:w-[min(52vw,820px)]"
+        >
+          <Image
+            src={project.cover.src}
+            alt=""
+            fill
+            sizes="(min-width: 768px) 52vw, 100vw"
+            className="object-cover transition-transform duration-700 ease-reveal group-hover:scale-[1.02]"
+          />
+        </Link>
+      ) : (
+        <>
+          <div className="absolute inset-0 translate-y-(--vy) will-change-transform">
+            <SceneCanvas scene={project.confidential ? "diagram" : "terrain"} seed={seedFor(project.slug)} room />
+          </div>
+          <div className="pointer-events-none absolute inset-0 scrim-slide" />
+        </>
+      )}
       <div className={`relative grid w-full max-w-page gap-x-16 gap-y-5 md:grid-cols-[3fr_2fr] md:items-end ${moving}`}>
         <p className="flex gap-3 type-kicker text-muted md:col-span-2">
           {dict.home.featured}
@@ -99,7 +122,7 @@ export function WorkScreen({ dict, locale, project, index, total }: WorkProps) {
               </div>
             ))}
           </dl>
-          <Link href={`/${locale}/projects/${project.slug}`} className={textLink}>
+          <Link href={caseHref} className={textLink}>
             {dict.home.viewCase} →
           </Link>
         </div>

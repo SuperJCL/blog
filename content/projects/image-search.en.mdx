@@ -8,9 +8,10 @@ company: Uniview
 stack: [React, Nest.js, Docker, Jenkins, Shell]
 featured: true
 order: 3
-stats:
-  - { value: 6 months, label: To the first release }
-  - { value: Shipped, label: "On sale, and still iterating" }
+cover:
+  src: /projects/image-search/results.webp
+  alt: "The image search screen: photo upload and filters on the left, captures ranked by similarity at the top, a floor map below"
+  caption: A test search. Captures come back ranked by similarity and are plotted on the map. Faces are pixelated.
 ---
 
 <Problem>
@@ -35,6 +36,14 @@ I wrote about half of the backend APIs in Nest.js and kept their documentation u
 
 I built the frontend of the archive module, where search results and trajectories are filed.
 
+<Figure
+  src="/projects/image-search/archive-flow.webp"
+  width={1220}
+  height={624}
+  alt="The archive module's interface flow: archive, query, delete and export, connected to the database and the archive folders on the server"
+  caption="The archive module's interface flow: archive, query, delete and export."
+/>
+
 ### Packaging and delivery
 
 The product had to install on its own, so everything from build to install was automated: Jenkins builds, Docker images, and install, upgrade and uninstall scripts.
@@ -52,6 +61,11 @@ The product had to install on its own, so everything from build to install was a
 </Approach>
 
 <Result>
+
+<Stats>
+  <Stat value="6 months">To the first release</Stat>
+  <Stat value="Shipped">On sale, and still iterating</Stat>
+</Stats>
 
 Shipped the first release in six months; it went on sale and kept improving afterwards.
 
