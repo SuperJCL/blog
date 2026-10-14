@@ -17,12 +17,15 @@
   "devDependencies": {
     "@content-collections/core": "^0.15.3",
     "@content-collections/next": "^0.2.11",
+    "@shikijs/rehype": "^4.4.3",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
+    "remark-gfm": "^4.0.1",
+    "shiki": "^4.4.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "zod": "^4.6.7"

@@ -11,7 +11,8 @@ Chenglin Jiang 的个人主页 + 技术博客。
 - Next.js 16，App Router，TypeScript（strict 模式）
 - 样式工具：Tailwind CSS
 - 部署：Vercel，线上地址 https://charliejiangblog.vercel.app ，推送到 `main` 自动部署
-- 博客内容方案：MDX + content-collections，文章放在 `content/posts/<slug>.<lang>.mdx`，同一 slug 的不同语言版本互为译文
+- 博客内容方案：MDX + content-collections，文章放在 `content/posts/<slug>.<lang>.mdx`，同一 slug 的不同语言版本互为译文；作品案例放在 `content/projects/<slug>.<lang>.mdx`，必须中英文都有
+- MDX 构建：remark-gfm（表格等 Markdown 扩展语法），shiki（构建时代码高亮，配色在 `lib/code-theme.ts`，取自设计变量）；改了 MDX 插件或配色后要删掉 `.content-collections/cache`
 
 # 双语
 
@@ -55,6 +56,8 @@ Chenglin Jiang 的个人主页 + 技术博客。
 
 - 公安、警务相关项目不放截图和真实数据，只写问题、我的角色、做法和结果
 - 网站上不公开手机号
+- 截图公开前先处理：裁掉浏览器地址栏和任务栏；人脸、IP、端口、授权信息和同事姓名打码；处理后的图放在 `public/projects/<slug>/`，原图不进仓库
+- 合作方提供的 3D 地图（恒润产业园、总部大厦视频）归在"3D 地图引擎对接"，不写合作方名称，也不放进自研的云渲染案例
 
 # 工作方式
 

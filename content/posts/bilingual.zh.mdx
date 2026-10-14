@@ -1,0 +1,102 @@
+---
+title: 用 Next.js 16 搭双语博客：语言检测、路由和译文链接
+summary: 这个网站中英双语。这篇记录三件事的做法：访问根路径时怎么选语言，页面怎么按语言组织，文章没有译文时怎么处理。
+date: 2026-10-13
+tags: [Next.js, i18n, 建站记录]
+---
+
+## 先定规则
+
+网站只有中文和英文。动手之前我先定了四条规则，后面的实现都围绕它们：
+
+1. 所有页面都在 `/en` 或 `/zh` 下面，语言是网址的一部分。
+2. 访问根路径时按浏览器语言跳转，识别不了就用英文。
+3. 切换语言时，停在当前页面的另一个语言版本。
+4. 文章不强制双语，有译文就互相链接。
+
+只有两种语言，用不着 i18n 库。界面文案放在两个字典文件里，中文字典的类型直接取自英文字典：`type Dictionary = typeof en`。中文漏了哪个词条，类型检查就会报错。
+
+## 访问根路径时选语言
+
+Next.js 16 把 middleware 改名为 proxy，文件是根目录下的 `proxy.ts`。它只处理还没有语言前缀的路径：`/en/…` 和 `/zh/…` 直接放行，其他路径跳转到带语言的地址，查询参数原样保留。
+
+> 跳转用 307 而不是 308。目标取决于访问者，不能让浏览器当成永久跳转缓存下来。
+
+### 判断顺序
+
+先看 cookie，再看浏览器语言，最后才用默认的英文。cookie 是点语言切换时写入的，代表明确的选择，所以优先级最高。下面是上线后实测的几种情况：
+
+| 请求 | 跳转到 | 原因 |
+| --- | --- | --- |
+| cookie `zh` + `en` | `/zh` | cookie 优先 |
+| `zh-CN,zh;q=0.9,en;q=0.8` | `/zh` | 主标签是 zh |
+| `fr,zh;q=0.5` | `/zh` | 不支持 fr，取下一个 |
+| `zh;q=0,en` | `/en` | q=0 表示不接受 |
+| `de` | `/en` | 都不支持，用默认值 |
+
+### 解析 Accept-Language
+
+浏览器发来的是一串带权重的语言标签。按 q 值从高到低排序，权重相同就保持原来的顺序；比较时只看主标签，所以 zh-CN、zh-TW、zh-HK 都算 zh：
+
+```ts
+// Picks the highest-q supported language, matching on the primary subtag
+// so zh-CN, zh-TW and zh-HK all map to zh.
+function matchAcceptLanguage(header: string | null): Locale | undefined {
+  if (!header) return undefined;
+
+  const ranked = header
+    .split(",")
+    .map((part, index) => {
+      const [tag, ...params] = part.trim().split(";");
+      const q = params.map((p) => p.trim()).find((p) => p.startsWith("q="));
+      return {
+        base: tag.trim().toLowerCase().split("-")[0],
+        quality: q ? Number(q.slice(2)) : 1,
+        index,
+      };
+    })
+    .filter((entry) => entry.quality > 0)
+    .sort((a, b) => b.quality - a.quality || a.index - b.index);
+
+  for (const { base } of ranked) {
+    if (hasLocale(base)) return base;
+  }
+  return undefined;
+}
+```
+
+`matcher` 跳过了 `_next/` 和带扩展名的路径，favicon、图片这类静态文件不会被跳转。代价是文章的 slug 里不能带点号。
+
+## 每个页面都在 `app/[lang]` 下
+
+语言是网址的第一段，也是根布局的参数：`app/[lang]/layout.tsx` 就是根布局，`<html lang>` 跟着语言变。`generateStaticParams` 返回 `en` 和 `zh`，两种语言的页面都在构建时生成。
+
+组件不需要一层层传 `params`。`next/root-params` 提供了 `lang()`，任何服务端组件都能直接读到当前语言，再加载对应的字典。
+
+语言切换是唯一要在浏览器里运行的部分：它把当前路径的第一段换成另一种语言，点击时写入 cookie，下次访问根路径就会记住这次的选择。
+
+## 文章不强制双语
+
+文章用 MDX 写，放在 `content/posts/` 下，文件名是 `<slug>.<lang>.mdx`。slug 相同、语言不同的两个文件就是彼此的译文，不需要额外配置。
+
+<Flow caption="图 1 · 同一个 slug 的两个文件对应两个网址，并在 <head> 里用 hreflang 互相标注。">
+  <Step label="文件" title="bilingual.zh.mdx" detail="bilingual.en.mdx" />
+  <Arrow label="按文件名" />
+  <Step label="slug" title="bilingual" highlight />
+  <Arrow label="生成" />
+  <Step label="网址" title="/zh/blog/bilingual" detail="/en/blog/bilingual" />
+</Flow>
+
+有译文时，文章底部给出另一种语言的链接。只有一种语言时，另一种语言的网址照样能打开：
+
+- 文章列表里，这篇文章旁边标出它的语言。
+- 文章页显示原文，顶部有一行说明，比如“本文只有中文版”。
+- canonical 指向原文的网址，搜索引擎不会把两个网址当成重复内容。
+
+## 还没做的
+
+- 设置 `metadataBase`，让 canonical 和 hreflang 输出完整网址。
+- RSS。
+- 暗色模式切换。
+
+这些留到最后的打磨阶段。网站已经上线：[charliejiangblog.vercel.app](https://charliejiangblog.vercel.app)。

@@ -32,7 +32,7 @@
   --font-sans: var(--font-instrument-sans), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: var(--font-plex-mono), var(--font-noto-sans-sc), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  /* Code panels are dark in both themes. */
+  /* Code panels are dark in both themes; lib/code-theme.ts colors highlighted code with these. */
   --color-code: #121211;
   --color-code-fg: #ecece6;
   --color-code-muted: #8a8a82;

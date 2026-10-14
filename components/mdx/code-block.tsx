@@ -28,7 +28,10 @@ export async function CodeBlock({ children }: { children?: ReactNode }) {
         <span>{language}</span>
         <CopyButton text={textOf(children).replace(/\n$/, "")} label={dict.blog.copy} done={dict.blog.copied} />
       </div>
-      <pre className="overflow-x-auto px-4 py-4 font-mono text-snippet tracking-normal">{children}</pre>
+      {/* Focusable, so a code line wider than the panel can be scrolled from the keyboard. */}
+      <pre tabIndex={0} className="overflow-x-auto px-4 py-4 font-mono text-snippet tracking-normal">
+        {children}
+      </pre>
     </div>
   );
 }

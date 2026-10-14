@@ -1,10 +1,16 @@
 import { defineCollection, defineConfig } from "@content-collections/core";
 import { compileMDX } from "@content-collections/mdx";
+import rehypeShiki from "@shikijs/rehype";
+import remarkGfm from "remark-gfm";
 import { z } from "zod";
 import { hasLocale, locales } from "./i18n/config";
+import { codeTheme } from "./lib/code-theme";
 import { extractToc } from "./lib/headings";
 import { readingMinutes } from "./lib/reading-time";
 import { rehypeHeadingIds } from "./lib/rehype-heading-ids";
+
+// Code is highlighted at build time with lib/code-theme.ts. compileMDX caches by file content only: after
+// changing any MDX plugin, option or the theme, delete .content-collections/cache.
 
 // Files are named `<slug>.<lang>.mdx`. Files that share a slug are translations of each other.
 function splitPath(meta: { path: string; filePath: string }, kind: string) {
@@ -31,7 +37,12 @@ const posts = defineCollection({
     const { slug, lang } = splitPath(document._meta, "Post");
     const toc = extractToc(document.content);
     const body = await compileMDX(context, document, {
-      rehypePlugins: [[rehypeHeadingIds, { ids: toc.map((entry) => entry.id) }]],
+      remarkPlugins: [remarkGfm],
+      rehypePlugins: [
+        [rehypeHeadingIds, { ids: toc.map((entry) => entry.id) }],
+        // addLanguageClass keeps `language-ts` on <code>, which the code panel shows as its label.
+        [rehypeShiki, { theme: codeTheme, addLanguageClass: true, lazy: true }],
+      ],
     });
     return { ...document, slug, lang, body, toc, readingMinutes: readingMinutes(document.content) };
   },
@@ -79,7 +90,7 @@ const projects = defineCollection({
     if (missing.length > 0) {
       throw new Error(`Project "${slug}" is missing its ${missing.join(", ")} version: ${file}`);
     }
-    const body = await compileMDX(context, document);
+    const body = await compileMDX(context, document, { remarkPlugins: [remarkGfm] });
     return { ...document, slug, lang, body };
   },
 });
