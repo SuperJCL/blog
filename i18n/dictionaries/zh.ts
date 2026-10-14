@@ -77,8 +77,15 @@ const zh: Dictionary = {
   },
   about: {
     title: "关于",
-    intro: "个人介绍，整理中。",
+    basedIn: "城市",
+    status: "状态",
+    studying: "在读",
+    experience: "经历",
+    awards: "获奖",
+    skills: "技能",
     contactTitle: "联系",
+    expected: "（预计）",
+    emailMe: "发邮件",
   },
 };
 

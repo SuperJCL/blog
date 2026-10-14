@@ -79,8 +79,15 @@ const en = {
   },
   about: {
     title: "About",
-    intro: "About me, coming soon.",
+    basedIn: "Based in",
+    status: "Status",
+    studying: "Studying",
+    experience: "Experience",
+    awards: "Awards",
+    skills: "Skills",
     contactTitle: "Contact",
+    expected: " (expected)",
+    emailMe: "Email me",
   },
 };
 

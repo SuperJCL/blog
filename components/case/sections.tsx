@@ -1,18 +1,14 @@
+import { NumberedSection } from "@/components/numbered-section";
 import { getDictionary } from "@/i18n/get-dictionary";
 
 type Props = { children: React.ReactNode };
 
-// One of the four fixed case-study sections: a numbered label that stays in view while its text scrolls.
 async function Section({ n, part, children }: Props & { n: string; part: "problem" | "role" | "approach" | "result" }) {
   const dict = await getDictionary();
   return (
-    <section className="grid gap-x-16 gap-y-5 border-t border-line py-section md:grid-cols-[minmax(11rem,1fr)_minmax(0,2.6fr)]">
-      <h2 className="flex items-baseline gap-4 self-start type-display text-section md:sticky md:top-sticky md:flex-col md:gap-3">
-        <span className="font-mono text-xs tracking-widest text-accent-text">{n}</span>
-        {dict.projects.sections[part]}
-      </h2>
-      <div className="prose min-w-0 text-read">{children}</div>
-    </section>
+    <NumberedSection n={n} title={dict.projects.sections[part]} prose>
+      {children}
+    </NumberedSection>
   );
 }
 
