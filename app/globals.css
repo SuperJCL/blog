@@ -55,6 +55,13 @@
   --text-section--line-height: 1;
   --text-stat: clamp(2.4rem, 1.4rem + 2.6vw, 4rem); /* key figures */
   --text-stat--line-height: 0.95;
+  --text-post: clamp(2.2rem, 1rem + 3.2vw, 4.2rem); /* article titles; a sentence long, so smaller than display */
+  --text-post-zh: clamp(2rem, 1rem + 3vw, 3.6rem);
+  --text-snippet: 0.8125rem; /* code blocks */
+  --text-snippet--line-height: 1.7;
+
+  /* Breakpoints beyond Tailwind's: the article gets its table of contents in a side column from here. */
+  --breakpoint-wide: 68.75rem;
   --text-h2: clamp(1.9rem, 1rem + 3vw, 3.4rem);
   --text-h2--line-height: 1.1;
   --text-lede: clamp(1.05rem, 0.95rem + 0.5vw, 1.35rem);
@@ -221,6 +228,22 @@
   &:lang(zh) {
     font-weight: 900;
     line-height: 1.08;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+}
+
+/* Article titles: Anton uppercase in English; Chinese titles smaller, in Noto Sans SC 900, with room between lines. */
+@utility type-post-title {
+  max-width: 18em;
+  font: 400 var(--text-post) / 0.98 var(--font-display);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+  &:lang(zh) {
+    font-size: var(--text-post-zh);
+    font-weight: 900;
+    line-height: 1.18;
     letter-spacing: 0;
     text-transform: none;
   }

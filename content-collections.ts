@@ -2,6 +2,9 @@ import { defineCollection, defineConfig } from "@content-collections/core";
 import { compileMDX } from "@content-collections/mdx";
 import { z } from "zod";
 import { hasLocale, locales } from "./i18n/config";
+import { extractToc } from "./lib/headings";
+import { readingMinutes } from "./lib/reading-time";
+import { rehypeHeadingIds } from "./lib/rehype-heading-ids";
 
 // Files are named `<slug>.<lang>.mdx`. Files that share a slug are translations of each other.
 function splitPath(meta: { path: string; filePath: string }, kind: string) {
@@ -26,8 +29,11 @@ const posts = defineCollection({
   }),
   transform: async (document, context) => {
     const { slug, lang } = splitPath(document._meta, "Post");
-    const body = await compileMDX(context, document);
-    return { ...document, slug, lang, body };
+    const toc = extractToc(document.content);
+    const body = await compileMDX(context, document, {
+      rehypePlugins: [[rehypeHeadingIds, { ids: toc.map((entry) => entry.id) }]],
+    });
+    return { ...document, slug, lang, body, toc, readingMinutes: readingMinutes(document.content) };
   },
 });
 

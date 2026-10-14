@@ -56,9 +56,20 @@ const zh: Dictionary = {
   },
   blog: {
     title: "博客",
+    intro: "记录 3D 地图、数据可视化和前端工程化上的实践，以及这个网站的搭建过程。",
     empty: "还没有文章。",
     allPosts: "全部文章",
+    contents: "目录",
+    minutes: "约 {n} 分钟",
+    previous: "上一篇",
+    next: "下一篇",
+    copy: "复制",
+    copied: "已复制",
     readIn: { en: "阅读英文版", zh: "阅读中文版" },
+    alsoIn: {
+      en: "本文另有英文版。",
+      zh: "本文另有中文版。",
+    },
     onlyIn: {
       en: "本文只有英文版。",
       zh: "本文只有中文版。",

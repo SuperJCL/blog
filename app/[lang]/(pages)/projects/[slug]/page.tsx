@@ -3,9 +3,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Arrow, Figure, Flow, Stat, Stats, Step } from "@/components/case/media";
+import { Arrow, Figure, Flow, Stat, Stats, Step } from "@/components/mdx/media";
 import { Approach, Problem, Result, Role } from "@/components/case/sections";
 import { Page } from "@/components/page";
+import { Pager } from "@/components/pager";
 import { SceneCanvas } from "@/components/scene-canvas";
 import { htmlLang, locales } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
@@ -56,9 +57,6 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/project
     { label: t.stack, value: project.stack.join(" · "), wide: true },
   ];
   const caption = project.cover?.caption ?? (project.confidential ? t.diagramCaption : undefined);
-  const cell = "group flex min-w-0 flex-col gap-3 bg-bg p-6 text-fg transition-colors hover:bg-accent hover:text-accent-ink md:p-8";
-  const cellLabel = "type-label text-muted group-hover:text-accent-ink";
-  const cellTitle = "font-display text-2xl leading-tight text-balance uppercase md:text-3xl zh:font-black";
 
   return (
     <Page>
@@ -112,19 +110,11 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/project
       {/* Problem, role, approach, result: each section brings its own label and prose styles. */}
       <MDXContent code={project.body} components={components} />
 
-      <nav aria-label={t.title} className="mt-16 grid gap-px border border-line bg-line md:grid-cols-2">
-        <Link href={prev ? `/${locale}/projects/${prev.slug}` : `/${locale}/projects`} className={cell}>
-          <span className={cellLabel}>← {prev ? t.previous : t.all}</span>
-          <span className={cellTitle}>{prev ? prev.title : t.all}</span>
-        </Link>
-        <Link
-          href={next ? `/${locale}/projects/${next.slug}` : `/${locale}/projects`}
-          className={`${cell} md:items-end md:text-right`}
-        >
-          <span className={cellLabel}>{next ? t.next : t.all} →</span>
-          <span className={cellTitle}>{next ? next.title : t.all}</span>
-        </Link>
-      </nav>
+      <Pager
+        label={t.title}
+        prev={prev ? { href: `/${locale}/projects/${prev.slug}`, label: t.previous, title: prev.title } : { href: `/${locale}/projects`, label: t.all, title: t.all }}
+        next={next ? { href: `/${locale}/projects/${next.slug}`, label: t.next, title: next.title } : { href: `/${locale}/projects`, label: t.all, title: t.all }}
+      />
     </Page>
   );
 }

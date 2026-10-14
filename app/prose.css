@@ -114,10 +114,37 @@
   overflow-wrap: anywhere;
 }
 
-/* Figures and diagrams get more room around them than paragraphs. */
-.prose > figure {
+/* Tables: mono column labels over a strong rule, light rules between rows. */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875em;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.prose th {
+  padding: 0 0.9em 0.7em 0;
+  border-bottom: 1px solid var(--fg);
+  text-align: left;
+  white-space: nowrap;
+  font: 500 var(--text-label) / 1.3 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.prose td {
+  padding: 0.75em 0.9em 0.75em 0;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.prose td code {
+  white-space: nowrap;
+}
+
+/* Figures, diagrams, code and tables get more room around them than paragraphs. */
+.prose > :is(figure, div) {
   margin-top: 2em;
 }
-.prose > figure + :not(h2, h3) {
+.prose > :is(figure, div) + :not(h2, h3) {
   margin-top: 1.6em;
 }

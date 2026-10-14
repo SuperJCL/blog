@@ -57,10 +57,21 @@ const en = {
   },
   blog: {
     title: "Blog",
+    intro: "Notes on 3D maps, data visualization and frontend engineering, and on building this site.",
     empty: "No posts yet.",
     allPosts: "All posts",
+    contents: "On this page",
+    minutes: "{n} min read",
+    previous: "Previous",
+    next: "Next",
+    copy: "Copy",
+    copied: "Copied",
     // Keyed by the language of the version being linked to or shown.
     readIn: { en: "Read in English", zh: "Read in Chinese" },
+    alsoIn: {
+      en: "This post is also available in English.",
+      zh: "This post is also available in Chinese.",
+    },
     onlyIn: {
       en: "This post is only available in English.",
       zh: "This post is only available in Chinese.",
