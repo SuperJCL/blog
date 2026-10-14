@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { Hero } from "@/components/home/hero";
 import { SceneCanvas } from "@/components/scene-canvas";
-import { focusAreas, hero } from "@/data/home";
+import { aboutCard, focusAreas, hero, marquee } from "@/data/home";
 import { contact, profile, siteSince } from "@/data/profile";
 import { htmlLang, localeNames, type Locale } from "@/i18n/config";
 import type { Dictionary } from "@/i18n/dictionaries/en";
@@ -16,28 +17,23 @@ const screen = "relative flex min-h-full snap-start snap-always flex-col overflo
 const moving = "translate-y-(--ty) opacity-(--o) will-change-transform";
 const textLink = "self-start border-b border-current pb-px font-semibold text-accent-text hover:border-b-2";
 
+// The corner cards: the three focus areas, then "about me" in the bottom-right corner.
 export function HeroScreen({ dict, locale }: ScreenProps) {
-  const [lead, accent] = hero.title[locale];
+  const cards = [
+    ...focusAreas.map((area) => ({ title: area.title[locale], body: area.body[locale], meta: area.tools.join(" · ") })),
+    { title: aboutCard.title[locale], body: aboutCard.body[locale], meta: aboutCard.tags.join(" · ") },
+  ];
   return (
-    <section id="hero" aria-labelledby="hero-title" className={`${screen} stage items-center justify-end text-center`}>
-      <div className={`flex flex-col items-center gap-5 ${moving}`}>
-        <h1 id="hero-title" className="flex flex-col items-center">
-          <span className="font-display text-hero-lead uppercase text-outline">{lead}</span>
-          <span className="type-display text-hero text-accent-text">{accent}</span>
-        </h1>
-        <p className="flex items-center gap-2 font-mono text-xs tracking-widest text-accent-text uppercase">
-          <span aria-hidden="true">✦</span>
-          {hero.roles[locale].join(" · ")}
-        </p>
-        <a
-          href="#work-1"
-          className="inline-flex items-center gap-2.5 rounded-full bg-fg px-5 py-2.5 font-mono text-xs font-medium tracking-wider text-bg uppercase transition-colors hover:bg-accent hover:text-accent-ink"
-        >
-          {dict.home.heroCta}
-          <span aria-hidden="true">→</span>
-        </a>
-      </div>
-    </section>
+    <Hero
+      title={hero.title[locale]}
+      roles={hero.roles[locale]}
+      cta={dict.home.heroCta}
+      ctaHref="#work-1"
+      cards={cards}
+      cardsLabel={dict.home.cardsLabel}
+      marquee={marquee}
+      status={profile.status[locale]}
+    />
   );
 }
 

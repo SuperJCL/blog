@@ -21,6 +21,7 @@ const zh: Dictionary = {
   },
   home: {
     heroCta: "查看作品",
+    cardsLabel: "四个方向",
     skillsKicker: "擅长什么",
     skillsTitle: "我主要做三类事情",
     featured: "精选作品",

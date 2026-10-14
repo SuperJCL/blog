@@ -58,10 +58,12 @@ export function SceneCanvas({ scene, seed, room = false, className }: Props) {
     };
     const start = () => { if (scene === "terrain" && !raf) raf = requestAnimationFrame(tick); };
 
+    // Turn only while mostly on screen. Ratio, not isIntersecting: a canvas that merely touches the viewport
+    // edge still "intersects"; the 0.01 step reports the moment it leaves.
     const io = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
+      visible = entry.intersectionRatio >= 0.55;
       if (visible) start();
-    }, { threshold: 0.55 });
+    }, { threshold: [0.01, 0.55] });
     io.observe(canvas);
     const ro = new ResizeObserver(() => draw());
     ro.observe(canvas);

@@ -6,7 +6,7 @@
  * never raw values.
  */
 
-/* Semantic colors and font stacks. `inline` makes each utility read the variable where it's used, so a
+/* Semantic colors. `inline` makes each utility read the variable where it's used, so a
    .stage block re-themes everything inside it. Tailwind's default palette is switched off: only these exist. */
 @theme inline {
   --color-*: initial;
@@ -20,16 +20,18 @@
   --color-accent-ink: var(--accent-ink);
   --color-prose: var(--prose);
 
-  --font-display: var(--font-anton), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-sans: var(--font-instrument-sans), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
-  --font-mono: var(--font-plex-mono), var(--font-noto-sans-sc), ui-monospace, "SFMono-Regular", Menlo, monospace;
-
   /* Long-form body; the line height follows the language (see [lang] below). */
   --text-read: 1.0625rem;
   --text-read--line-height: var(--leading-read);
 }
 
-@theme {
+/* `static` always emits these as CSS variables, so component stylesheets (components/home/hero.css) can use
+   var(--font-display), var(--spacing-gutter) and so on even where no utility does. */
+@theme static {
+  --font-display: var(--font-anton), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-sans: var(--font-instrument-sans), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: var(--font-plex-mono), var(--font-noto-sans-sc), ui-monospace, "SFMono-Regular", Menlo, monospace;
+
   /* Code panels are dark in both themes. */
   --color-code: #121211;
   --color-code-fg: #ecece6;

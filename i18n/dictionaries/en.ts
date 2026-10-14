@@ -20,6 +20,7 @@ const en = {
   },
   home: {
     heroCta: "View projects",
+    cardsLabel: "Four areas",
     skillsKicker: "What I do",
     skillsTitle: "Three kinds of work",
     featured: "Selected work",

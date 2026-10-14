@@ -137,7 +137,9 @@ export function SlidePager({ slides, dotsLabel, children }: Props) {
     };
 
     /* ---------- enter/leave parallax: each screen eases in and fades as it moves ---------- */
-    let ticking = false, pagingTimer = 0;
+    // The current screen is whichever is nearest to the scroll position. (An IntersectionObserver can't decide
+    // this: a screen merely touching the viewport edge also counts as intersecting.)
+    let ticking = false, pagingTimer = 0, current = -1;
     const updateParallax = () => {
       ticking = false;
       const vh = scroller.clientHeight, st = scroller.scrollTop, still = reduce.matches;
@@ -147,6 +149,12 @@ export function SlidePager({ slides, dotsLabel, children }: Props) {
         s.style.setProperty("--vy", still ? "0px" : `${(r * vh * 0.18).toFixed(1)}px`);
         s.style.setProperty("--o", still ? "1" : Math.max(0, 1 - Math.abs(r) * 1.5).toFixed(3));
       }
+      const index = nearest();
+      if (index !== current) {
+        current = index;
+        setActive(index);
+        root.toggleAttribute("data-hero-on", sections[index].id === "hero");
+      }
     };
     const onScroll = () => {
       root.setAttribute("data-paging", "");
@@ -154,16 +162,6 @@ export function SlidePager({ slides, dotsLabel, children }: Props) {
       pagingTimer = window.setTimeout(() => root.removeAttribute("data-paging"), 180);
       if (!ticking) { ticking = true; requestAnimationFrame(updateParallax); }
     };
-
-    const io = new IntersectionObserver((entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        const index = sections.indexOf(entry.target as HTMLElement);
-        setActive(index);
-        root.toggleAttribute("data-hero-on", sections[index].id === "hero");
-      }
-    }, { root: scroller, threshold: 0.55 });
-    sections.forEach((s) => io.observe(s));
 
     let resizeTimer = 0;
     const ro = new ResizeObserver(() => {
@@ -191,7 +189,6 @@ export function SlidePager({ slides, dotsLabel, children }: Props) {
       clearTimeout(releaseTimer);
       clearTimeout(pagingTimer);
       clearTimeout(resizeTimer);
-      io.disconnect();
       ro.disconnect();
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("keydown", onKey);

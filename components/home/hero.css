@@ -1,0 +1,379 @@
+/*
+ * Homepage hero, direction D: three depth layers around the portrait, four corner cards and a status bar.
+ * Colors come from the .stage tokens (app/globals.css); motion is driven from hero.tsx.
+ */
+
+.hero {
+  position: relative;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+  padding-inline: var(--spacing-gutter);
+  padding-block: var(--spacing-slide-top) var(--spacing-slide-bottom);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Layers are larger than the screen so parallax never shows an edge. */
+.hero-layer {
+  position: absolute;
+  inset: -6%;
+  z-index: 0;
+  will-change: transform;
+}
+.hero-layer-mid {
+  z-index: 1;
+}
+.hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.hero-layer-fg {
+  z-index: 4;
+  pointer-events: none;
+}
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-portrait-box {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 5%;
+  pointer-events: none;
+  animation: hero-portrait-in 1.6s var(--ease-reveal) both;
+}
+.hero-portrait {
+  display: block;
+  flex: none;
+  width: auto;
+  max-width: none;
+  height: 86%;
+  aspect-ratio: 840 / 640;
+  transform-origin: 40% 45%; /* the face, so zooming feels like leaning in */
+  will-change: transform;
+  user-select: none;
+  /* Fade in at the top edge (the photo would cut off the stars), out below the collarbone and at the sides.
+     Mask colors are alpha only. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 52%, transparent 90%), linear-gradient(to right, transparent 2%, #000 22%, #000 78%, transparent 98%);
+  mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 52%, transparent 90%), linear-gradient(to right, transparent 2%, #000 22%, #000 78%, transparent 98%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+.hero-overlay {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  padding-bottom: 1.5rem;
+  text-align: center;
+  will-change: transform, opacity;
+}
+.hero-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.hero-role {
+  display: flex;
+  min-height: 1.2em;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font: 500 0.75rem/1.2 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.hero-role:lang(zh) {
+  text-transform: none;
+}
+.hero-caret {
+  width: 0.55em;
+  height: 1.1em;
+  background: var(--accent-text);
+  animation: hero-blink 1s steps(1) infinite;
+}
+
+/* Four corner cards: a label that opens into a short description. */
+.hero-quads {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.hero-quad {
+  position: absolute;
+  display: flex;
+  width: min(22rem, 26vw);
+  flex-direction: column;
+  gap: 0.6rem;
+  pointer-events: auto;
+}
+.hero-quad[data-q="0"] {
+  top: calc(var(--spacing-nav) + 5vh);
+  left: var(--spacing-gutter);
+}
+.hero-quad[data-q="1"] {
+  top: calc(var(--spacing-nav) + 5vh);
+  right: var(--spacing-gutter);
+  align-items: flex-end;
+  text-align: right;
+}
+.hero-quad[data-q="2"] {
+  bottom: calc(var(--spacing-slide-bottom) + 2.5rem);
+  left: var(--spacing-gutter);
+}
+.hero-quad[data-q="3"] {
+  right: var(--spacing-gutter);
+  bottom: calc(var(--spacing-slide-bottom) + 2.5rem);
+  align-items: flex-end;
+  text-align: right;
+}
+.hero-quad[data-q="2"],
+.hero-quad[data-q="3"] {
+  flex-direction: column-reverse;
+}
+.hero-quad-hint {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  opacity: 0.72;
+  font: 400 1.25rem/1.1 var(--font-display);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.3s, color 0.3s;
+}
+.hero-quad-hint:lang(zh) {
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+.hero-quad[data-q="1"] .hero-quad-hint,
+.hero-quad[data-q="3"] .hero-quad-hint {
+  flex-direction: row-reverse;
+}
+.hero-quad-arrow {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--accent-text);
+  transition: transform 0.4s var(--ease-snap);
+}
+.hero-quad[data-on] .hero-quad-hint {
+  color: var(--accent-text);
+  opacity: 1;
+}
+.hero-quad[data-on] .hero-quad-arrow {
+  transform: scale(1.25);
+}
+.hero-quad-card {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.5s var(--ease-snap), opacity 0.35s;
+}
+.hero-quad-card > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.hero-quad[data-on] .hero-quad-card {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.hero-quad-body {
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+  font: 400 0.8125rem/1.75 var(--font-mono);
+  color: var(--fg);
+  text-wrap: pretty;
+}
+.hero-quad[data-q="2"] .hero-quad-body,
+.hero-quad[data-q="3"] .hero-quad-body {
+  padding: 0 0 0.7rem;
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+}
+.hero-quad-meta {
+  margin-top: 0.5rem;
+  font: 500 0.6875rem/1.4 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-text);
+}
+.hero-quad[data-q="2"] .hero-quad-meta,
+.hero-quad[data-q="3"] .hero-quad-meta {
+  margin: 0 0 0.5rem;
+}
+
+/* Bottom bar: UTC clock, tech marquee, status. */
+.hero-bar {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 1.5rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-inline: var(--spacing-gutter);
+  font: 500 0.6875rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+/* Chinese pages keep tech names as written (Three.js, not THREE.JS). */
+.hero-bar:lang(zh),
+.hero-quad-meta:lang(zh) {
+  text-transform: none;
+}
+.hero-clock {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.hero-marquee {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.hero-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: hero-marquee 38s linear infinite;
+}
+.hero-marquee:hover .hero-marquee-track {
+  animation-play-state: paused;
+}
+.hero-marquee-group {
+  display: flex;
+}
+.hero-marquee-item {
+  padding-inline: 1.6rem;
+  font: 400 1.05rem/1 var(--font-display);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.hero-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+.hero-status i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-text);
+  animation: hero-pulse 2s ease-out infinite;
+}
+
+/* Entrance */
+.hero-overlay > *,
+.hero-quad {
+  animation: hero-rise 1.1s var(--ease-reveal) both;
+}
+.hero-title {
+  animation-delay: 0.1s;
+}
+.hero-role {
+  animation-delay: 0.35s;
+}
+.hero-overlay > a {
+  animation-delay: 0.5s;
+}
+.hero-quad {
+  animation-delay: 0.7s;
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.45em, 0);
+  }
+}
+@keyframes hero-portrait-in {
+  from {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+}
+@keyframes hero-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes hero-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes hero-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent-text) 60%, transparent);
+  }
+  70%,
+  100% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+}
+
+/* Phones: a smaller portrait, and the four cards as a two-column grid under the header. */
+@media (width < 48rem) {
+  .hero-portrait-box {
+    padding-bottom: 16%;
+  }
+  .hero-portrait {
+    height: 62%;
+  }
+  .hero-quads {
+    inset: auto var(--spacing-gutter);
+    top: calc(var(--spacing-nav) + 1.5vh);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start;
+    gap: 0.6rem 1rem;
+  }
+  .hero-quad,
+  .hero-quad[data-q] {
+    position: static;
+    width: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+  .hero-quad[data-q] .hero-quad-hint {
+    flex-direction: row;
+    font-size: 1rem;
+  }
+  .hero-quad[data-q] .hero-quad-body {
+    padding: 0.5rem 0 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 0;
+    font-size: 0.75rem;
+  }
+  .hero-quad[data-q] .hero-quad-meta {
+    margin: 0.4rem 0 0;
+  }
+  .hero-status {
+    display: none;
+  }
+}

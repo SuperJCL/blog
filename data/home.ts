@@ -1,6 +1,6 @@
 import type { Localized } from "@/i18n/config";
 
-// Homepage copy. The hero's corner cards (stage 3.3b) reuse `focusAreas` and `aboutCard`.
+// Homepage copy. The hero's corner cards reuse `focusAreas` (the "what I do" screen) and `aboutCard`.
 
 export const hero = {
   // Two lines: a lead-in and the big accent line.
