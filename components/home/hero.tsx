@@ -30,7 +30,8 @@ const ARROWS = ["↖", "↗", "↙", "↘"];
 const FACE = { u: 0.4, v: 0.42 }; // face centre in the portrait, as a fraction of its size
 const ORIGIN = { u: 0.4, v: 0.45 }; // the portrait's transform-origin in hero.css
 const AUTO_ORDER = [0, 1, 3, 2]; // corner cards take turns clockwise
-const CARD_LOCK_MS = 5000; // after a click or focus, the pointer doesn't move the open card
+const AUTO_MS = 7000; // how long each card stays open while they take turns: long enough to read one
+const CARD_LOCK_MS = 10000; // after a tap, click or focus, that card stays open this long before turns resume
 
 type Axis = { p: number; v: number };
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -113,7 +114,8 @@ export function Hero({ title, roles, cta, ctaHref, cards, cardsLabel, marquee, s
     const zoom = { s: { p: 1, v: 0 }, x: { p: 0, v: 0 }, y: { p: 0, v: 0 } };
     const cursor = { x: 0, y: 0, on: false };
     let mouseX = 0, mouseY = 0, lastMouse = 0, faceHover = false, visible = true;
-    let raf = 0, last = 0, lastAuto = 0, autoStep = -1;
+    // lastAuto starts so that the first card opens 3 s in, not a full turn later.
+    let raf = 0, last = 0, lastAuto = 3000 - AUTO_MS, autoStep = -1;
 
     const setCard = (card: number) => {
       if (activeRef.current === card) return;
@@ -209,8 +211,12 @@ export function Hero({ title, roles, cta, ctaHref, cards, cardsLabel, marquee, s
       step(zoom.y, card >= 0 ? (card < 2 ? -6 : 6) : 0, portraitSpring.position, dt);
       portrait.style.transform = `translate3d(${zoom.x.p.toFixed(2)}px, ${zoom.y.p.toFixed(2)}px, 0) scale(${zoom.s.p.toFixed(4)})`;
 
-      // With no mouse (touch, or a mouse resting for a while) the corner cards take turns.
-      if ((noHover.matches || now - lastMouse > 6000) && now > lockRef.current && now - lastAuto > 3600) {
+      // With no mouse (touch, or a mouse resting for a while) the corner cards take turns. While a picked card
+      // is held open, the turns pick up after it, and move on as soon as the hold ends.
+      if (now <= lockRef.current) {
+        autoStep = AUTO_ORDER.indexOf(activeRef.current);
+        lastAuto = lockRef.current - AUTO_MS;
+      } else if ((noHover.matches || now - lastMouse > 6000) && now - lastAuto > AUTO_MS) {
         autoStep = (autoStep + 1) % 4;
         setCard(AUTO_ORDER[autoStep]);
         lastAuto = now;

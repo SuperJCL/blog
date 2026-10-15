@@ -159,6 +159,7 @@
   opacity: 0.72;
   font: 400 1.25rem/1.1 var(--font-display);
   letter-spacing: 0.03em;
+  text-align: inherit; /* a wrapped label lines up with its card, not centred as buttons default to */
   text-transform: uppercase;
   cursor: pointer;
   transition: opacity 0.3s, color 0.3s;
@@ -343,7 +344,8 @@
   }
 }
 
-/* Phones: a smaller portrait, and the four cards as a two-column grid under the header. */
+/* Phones: a smaller portrait, and the four cards as a two-column grid under the header. The open card takes a
+   whole row, so its text has the full width; the other labels keep their order around it. */
 @media (width < 48rem) {
   .hero-portrait-box {
     padding-bottom: 16%;
@@ -367,15 +369,24 @@
     align-items: flex-start;
     text-align: left;
   }
+  .hero-quad[data-on] {
+    grid-column: 1 / -1;
+  }
+  /* A closing card leaves at once: in its half-width cell its text would reflow while fading. */
+  .hero-quad:not([data-on]) .hero-quad-card {
+    transition: none;
+  }
   .hero-quad[data-q] .hero-quad-hint {
     flex-direction: row;
     font-size: 1rem;
   }
+  /* Full width, but clear of the screen dots on the right edge; tighter leading so the longest card stays
+     above the hero title on short phones. */
   .hero-quad[data-q] .hero-quad-body {
-    padding: 0.5rem 0 0;
+    padding: 0.5rem 1rem 0 0;
     border-top: 1px solid var(--line);
     border-bottom: 0;
-    font-size: 0.75rem;
+    line-height: 1.6;
   }
   .hero-quad[data-q] .hero-quad-meta {
     margin: 0.4rem 0 0;
