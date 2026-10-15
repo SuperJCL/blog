@@ -1,0 +1,5 @@
+Map data © OpenStreetMap contributors (https://www.openstreetmap.org/copyright).
+
+city.bin and city.json are a derived database of buildings, roads, water and parks in central Seattle,
+extracted from OpenStreetMap on 2026-10-15 by scripts/seattle-data.mjs. They are made available under
+the Open Database License 1.0: https://opendatacommons.org/licenses/odbl/1-0/
