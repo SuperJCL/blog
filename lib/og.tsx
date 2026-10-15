@@ -52,7 +52,8 @@ export type ShareCard = {
   titleLang?: Locale; // the title's language when it differs (a post shown in the other language)
   name: string;
   kicker: string;
-  title: string | [string, string]; // a second part is set in the accent, as in the hero
+  title: string | string[]; // an array is drawn one line each (a line too long still wraps)
+  accentLast?: boolean; // the last line in the accent, as in the hero
   meta?: string;
   portrait?: boolean;
 };
@@ -95,7 +96,7 @@ export async function shareImage(card: ShareCard) {
           <span style={{ ...mono, fontSize: 24, color: c.accent }}>{card.kicker}</span>
           <div style={{ display: "flex", flexDirection: "column", fontFamily: zhTitle ? "Noto Sans SC" : "Anton", fontWeight: zhTitle ? 900 : 400, fontSize: size, lineHeight: zhTitle ? 1.16 : 0.96, textTransform: zhTitle ? "none" : "uppercase", letterSpacing: zhTitle ? 0 : 1 }}>
             {parts.map((part, i) => (
-              <span key={part} style={{ color: i ? c.accent : c.fg }}>{part}</span>
+              <span key={part} style={{ color: card.accentLast && i === parts.length - 1 ? c.accent : c.fg }}>{part}</span>
             ))}
           </div>
           {card.meta && <span style={{ ...mono, fontSize: 22, color: c.muted, lineHeight: 1.5 }}>{card.meta}</span>}

@@ -1,8 +1,15 @@
 import type { Localized } from "@/i18n/config";
 
+// The role broken where it reads well, for places that set it large (the about page's share image), so a line
+// never ends mid-word. `profile.role` is the same words on one line.
+export const roleLines: Localized<string[]> = {
+  en: ["Frontend engineer", "focused on visualization"],
+  zh: ["可视化方向的", "前端工程师"],
+};
+
 export const profile = {
   name: { en: "Chenglin Jiang", zh: "蒋承霖" },
-  role: { en: "Frontend engineer focused on visualization", zh: "可视化方向的前端工程师" },
+  role: { en: roleLines.en.join(" "), zh: roleLines.zh.join("") },
   location: { en: "Seattle, WA", zh: "西雅图" },
   status: { en: "Seeking Summer 2028 internships", zh: "寻找 2028 年暑期实习" },
   summary: {

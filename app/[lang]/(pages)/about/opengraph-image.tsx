@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { profile } from "@/data/profile";
+import { profile, roleLines } from "@/data/profile";
 import { hasLocale } from "@/i18n/config";
 import { dictionaryFor } from "@/i18n/get-dictionary";
 import { shareImage, shareSize, shareType } from "@/lib/og";
@@ -19,7 +19,7 @@ export default async function Image({ params }: { params: Promise<{ lang: string
     locale: lang,
     name: profile.name[lang],
     kicker: dict.about.title,
-    title: profile.role[lang],
+    title: roleLines[lang],
     meta: `${profile.location[lang]} · ${profile.status[lang]}`,
     portrait: true,
   });

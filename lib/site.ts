@@ -5,6 +5,9 @@ import { defaultLocale, htmlLang, locales, type Locale } from "@/i18n/config";
 // built on it; with a custom domain this is the only line to change.
 export const siteUrl = "https://charliejiangblog.vercel.app";
 
+// Google Search Console ownership check for siteUrl (a public token, shown in every page's head).
+export const googleSiteVerification = "p7_63HssefTCUmGz6sQMJIcvQgeAjRRubqa1C-HX22g";
+
 // "Projects · Chenglin Jiang". The root layout's title template uses the same shape.
 export const pageTitle = (title: string, site: string) => `${title} · ${site}`;
 

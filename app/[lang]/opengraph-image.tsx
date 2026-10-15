@@ -15,12 +15,12 @@ export async function generateImageMetadata({ params }: { params: { lang: string
 export default async function Image({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const [lead, accent] = hero.title[lang];
   return shareImage({
     locale: lang,
     name: profile.name[lang],
     kicker: profile.role[lang],
-    title: [lead, accent],
+    title: hero.title[lang],
+    accentLast: true,
     meta: focusAreas.map((area) => area.title[lang]).join(" · "),
     portrait: true,
   });

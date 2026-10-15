@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { htmlLang, locales } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
-import { pageTitle, siteUrl } from "@/lib/site";
+import { googleSiteVerification, pageTitle, siteUrl } from "@/lib/site";
 import { fontVariables } from "../fonts";
 import "../globals.css";
 
@@ -21,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
       template: pageTitle("%s", dict.meta.title),
     },
     description: dict.meta.description,
+    verification: { google: googleSiteVerification },
   };
 }
 
