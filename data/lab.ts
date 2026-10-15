@@ -9,12 +9,15 @@ export type LabSection = {
   links?: { label: Localized; href: string }[];
 };
 
+export type Landmark = { id: string; name: Localized; lat: number; lon: number };
+
 type LabDemo = {
   slug: string;
   data: string;
   title: Localized;
   description: Localized;
   lede: Localized;
+  landmarks: Landmark[];
   sections: LabSection[];
 };
 
@@ -30,6 +33,15 @@ export const seattleDemo: LabDemo = {
     en: "{buildings} buildings of central Seattle from OpenStreetMap, extruded to their heights and drawn live with Three.js. Drag to look around.",
     zh: "西雅图市中心的 {buildings} 个楼体，数据来自 OpenStreetMap，按高度拉伸，用 Three.js 实时渲染。拖动画面四处看看。",
   },
+  // Places the camera can fly to, roughly north to south. Northeastern's campus is placed by its street address.
+  landmarks: [
+    { id: "space-needle", name: { en: "Space Needle", zh: "太空针塔" }, lat: 47.6205, lon: -122.3493 },
+    { id: "northeastern", name: { en: "Northeastern University Seattle", zh: "东北大学西雅图校区" }, lat: 47.6203, lon: -122.3373 },
+    { id: "spheres", name: { en: "Amazon Spheres", zh: "亚马逊球体" }, lat: 47.6156, lon: -122.3396 },
+    { id: "pike-place", name: { en: "Pike Place Market", zh: "派克市场" }, lat: 47.6097, lon: -122.3422 },
+    { id: "library", name: { en: "Central Library", zh: "西雅图中央图书馆" }, lat: 47.6067, lon: -122.3325 },
+    { id: "columbia", name: { en: "Columbia Center", zh: "哥伦比亚中心" }, lat: 47.6045, lon: -122.3305 },
+  ],
   sections: [
     {
       title: { en: "What you're looking at", zh: "看到的是什么" },
@@ -54,6 +66,10 @@ export const seattleDemo: LabDemo = {
         {
           en: "Rendering: in the browser every footprint is extruded and triangulated into one merged mesh, so the whole city is a single draw call. Flat shading and darker wall bases give the blocks their volume; the colours are the site's design tokens and follow the light or dark theme.",
           zh: "渲染：浏览器里把每个轮廓拉伸、三角化，合并成一个网格，整座城市一次绘制调用画完。平面着色加上压暗的墙脚，让体块有体积感；配色取自网站的设计变量，跟随亮色和暗色主题。",
+        },
+        {
+          en: "Picking: every vertex also carries its block's number as a colour. To find the building under the pointer, the scene is drawn once more into a 1 × 1 pixel target at that spot and the colour read back: one pixel, whatever the number of buildings.",
+          zh: "拾取：每个顶点还带着所属楼体的编号，编码成颜色。要知道指针下是哪栋楼，就在那个位置把场景再画一遍，画进 1 × 1 像素的离屏目标，读回颜色即可：无论有多少栋楼，都只读一个像素。",
         },
         {
           en: "Performance: it draws only while the camera moves, pauses off screen and caps the pixel ratio. Three.js loads on this page only.",

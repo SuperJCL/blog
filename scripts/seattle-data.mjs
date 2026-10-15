@@ -388,6 +388,7 @@ writeFileSync(join(outDir, "city.json"), JSON.stringify({
   licence: "ODbL 1.0, © OpenStreetMap contributors",
   extracted,
   origin: ORIGIN,
+  metresPerDegree: { lon: kx, lat: ky }, // the projection above, so the page places landmarks exactly
   quantum: QUANTUM,
   bounds: { minX: R.minX, maxX: R.maxX, minY: R.minY, maxY: R.maxY },
   // x east, y north, in metres from the origin; coordinates are Int16 multiples of `quantum`, heights Uint16 decimetres.

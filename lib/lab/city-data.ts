@@ -5,6 +5,8 @@
 type SectionType = "Uint8" | "Uint16" | "Int16";
 export type CityMeta = {
   extracted: string;
+  origin: { lat: number; lon: number };
+  metresPerDegree: { lat: number; lon: number };
   quantum: number;
   bounds: { minX: number; maxX: number; minY: number; maxY: number };
   categories: string[];
@@ -34,6 +36,11 @@ export type City = {
 };
 
 const arrays = { Uint8: Uint8Array, Uint16: Uint16Array, Int16: Int16Array };
+
+// A map position on the scene's ground (x east, z south), with the projection the data was built with.
+export function toScene(meta: CityMeta, lat: number, lon: number) {
+  return { x: (lon - meta.origin.lon) * meta.metresPerDegree.lon, z: -(lat - meta.origin.lat) * meta.metresPerDegree.lat };
+}
 
 export async function loadCity(base: string): Promise<City> {
   const [meta, buffer] = await Promise.all([

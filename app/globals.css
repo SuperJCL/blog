@@ -19,6 +19,8 @@
   --color-accent-text: var(--accent-text);
   --color-accent-ink: var(--accent-ink);
   --color-prose: var(--prose);
+  --color-data-blue: var(--data-blue);
+  --color-data-amber: var(--data-amber);
 
   /* Long-form body; the line height follows the language (see [lang] below). */
   --text-read: 1.0625rem;
@@ -105,6 +107,8 @@
     --light-accent-text: #4a6400;
     --light-accent-ink: #0c0c0c;
     --light-prose: #1b1b19;
+    --light-data-blue: #2b6a99; /* categories in data views (the 3D map): with the accent and a grey */
+    --light-data-amber: #a3610c;
 
     --dark-bg: #0a0a0a;
     --dark-fg: #f4f4f0;
@@ -115,6 +119,8 @@
     --dark-accent-text: #d4ff3a;
     --dark-accent-ink: #0a0a0a;
     --dark-prose: #d9d9d2; /* bright text on black glows and reads heavier, so body copy steps down */
+    --dark-data-blue: #9fd6ff; /* the code panels' number and string colours */
+    --dark-data-amber: #ffcf8a;
 
     /* Semantic tokens, light by default */
     --bg: var(--light-bg);
@@ -126,6 +132,8 @@
     --accent-text: var(--light-accent-text); /* the accent as text, thin lines, focus rings */
     --accent-ink: var(--light-accent-ink); /* text on an accent fill */
     --prose: var(--light-prose); /* long-form body text */
+    --data-blue: var(--light-data-blue);
+    --data-amber: var(--light-data-amber);
     color-scheme: light;
   }
 
@@ -140,6 +148,8 @@
       --accent-text: var(--dark-accent-text);
       --accent-ink: var(--dark-accent-ink);
       --prose: var(--dark-prose);
+      --data-blue: var(--dark-data-blue);
+      --data-amber: var(--dark-data-amber);
       color-scheme: dark;
     }
   }
@@ -160,6 +170,8 @@
     --accent-text: var(--dark-accent-text);
     --accent-ink: var(--dark-accent-ink);
     --prose: var(--dark-prose);
+    --data-blue: var(--dark-data-blue);
+    --data-amber: var(--dark-data-amber);
     color-scheme: dark;
   }
   .stage {

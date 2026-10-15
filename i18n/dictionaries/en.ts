@@ -101,8 +101,21 @@ const en = {
     noWebgl: "This browser can't show the 3D map: WebGL isn't available.",
     hintPointer: "Drag to turn · scroll to zoom · right-drag to pan",
     hintTouch: "Drag to turn · pinch to zoom · two fingers to pan",
-    hintKeys: "Arrow keys pan the map while it has focus.",
+    hintKeys: "While the map has focus, arrow keys pan it and Enter describes the building in the middle.",
     attribution: "© OpenStreetMap contributors",
+    colourBy: "Colour by",
+    byHeight: "Height",
+    byUse: "Use",
+    categories: ["Office & commercial", "Residential", "Civic & public", "Other"],
+    flyTo: "Fly to",
+    reset: "Reset view",
+    arrived: "Now at {place}.",
+    unnamed: "Building",
+    metres: "{n} m",
+    floors: "{n} floors",
+    // By where a height comes from (city.json heightSource): tagged, from storeys, typical for the type.
+    heightNote: ["", "estimated from floors", "typical for its type"],
+    nothingThere: "No building in the middle of the view.",
   },
 };
 

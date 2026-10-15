@@ -49,16 +49,9 @@ export default async function SeattleDemoPage() {
 
       <CityViewer
         data={seattleDemo.data}
-        labels={{
-          viewer: fill(t.viewerLabel),
-          loading: t.loading,
-          failed: t.failed,
-          noWebgl: t.noWebgl,
-          hintPointer: t.hintPointer,
-          hintTouch: t.hintTouch,
-          hintKeys: t.hintKeys,
-          attribution: t.attribution,
-        }}
+        zh={locale === "zh"}
+        places={seattleDemo.landmarks.map((l) => ({ id: l.id, name: l.name[locale], lat: l.lat, lon: l.lon }))}
+        labels={{ ...t, viewer: fill(t.viewerLabel) }}
       />
 
       <div className="mt-section">
