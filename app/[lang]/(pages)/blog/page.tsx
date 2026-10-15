@@ -4,10 +4,12 @@ import { Page } from "@/components/page";
 import { htmlLang, localeNames } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { getPostList } from "@/lib/posts";
+import { pageMeta } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
   const dict = await getDictionary();
-  return { title: dict.blog.title, description: dict.blog.intro };
+  return pageMeta({ locale, path: "/blog", site: dict.meta.title, title: dict.blog.title, description: dict.blog.intro });
 }
 
 export default async function BlogPage() {

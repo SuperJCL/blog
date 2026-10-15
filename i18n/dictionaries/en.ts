@@ -1,6 +1,7 @@
 const en = {
   meta: {
     title: "Chenglin Jiang",
+    homeTitle: "Chenglin Jiang · Frontend Engineer, 3D Maps & Data Visualization",
     description:
       "Frontend engineer focused on visualization: 3D maps, data visualization and full-stack engineering.",
   },

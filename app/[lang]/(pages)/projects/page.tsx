@@ -10,10 +10,12 @@ import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { formatPeriod } from "@/lib/format";
 import { getProjects } from "@/lib/projects";
 import { seedFor } from "@/lib/scene";
+import { pageMeta } from "@/lib/site";
 
 export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
   const dict = await getDictionary();
-  return { title: dict.projects.title, description: dict.projects.intro };
+  return pageMeta({ locale, path: "/projects", site: dict.meta.title, title: dict.projects.title, description: dict.projects.intro });
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");

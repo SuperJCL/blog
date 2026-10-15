@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { NumberedSection } from "@/components/numbered-section";
+import { JsonLd } from "@/components/json-ld";
 import { Page } from "@/components/page";
 import { awards } from "@/data/awards";
 import { experience } from "@/data/experience";
@@ -7,11 +8,16 @@ import { contact, profile } from "@/data/profile";
 import { skills } from "@/data/skills";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { formatPeriod } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
+import { personData } from "@/lib/structured-data";
 
+// The description is the summary's first sentence and the current status.
 export async function generateMetadata(): Promise<Metadata> {
   const dict = await getDictionary();
   const locale = await getLocale();
-  return { title: dict.about.title, description: `${profile.role[locale]} · ${profile.status[locale]}` };
+  const firstSentence = profile.summary[locale].match(/^.+?[.。]/)?.[0] ?? profile.role[locale];
+  const description = `${firstSentence}${locale === "zh" ? "" : " "}${profile.status[locale]}${locale === "zh" ? "。" : "."}`;
+  return pageMeta({ locale, path: "/about", site: dict.meta.title, title: dict.about.title, description });
 }
 
 // The date column fits "2026.09 – 2029.05（预计）" on one line.
@@ -35,6 +41,7 @@ export default async function AboutPage() {
 
   return (
     <Page>
+      <JsonLd data={personData(locale)} />
       <header className="flex flex-col gap-6 pb-12">
         <h1 className="type-display text-title">{t.title}</h1>
         <p className="max-w-measure text-lede text-pretty">{profile.summary[locale]}</p>

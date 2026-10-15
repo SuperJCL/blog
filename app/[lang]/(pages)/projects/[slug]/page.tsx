@@ -8,11 +8,11 @@ import { Approach, Problem, Result, Role } from "@/components/case/sections";
 import { Page } from "@/components/page";
 import { Pager } from "@/components/pager";
 import { SceneCanvas } from "@/components/scene-canvas";
-import { htmlLang, locales } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { formatPeriod } from "@/lib/format";
 import { getProject, getProjects, getProjectSlugs } from "@/lib/projects";
 import { seedFor } from "@/lib/scene";
+import { pageMeta } from "@/lib/site";
 
 // Tags a project MDX file can use.
 const components = { Problem, Role, Approach, Result, Flow, Step, Arrow, Figure, Stats, Stat };
@@ -28,14 +28,8 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/projects/[
   const locale = await getLocale();
   const project = getProject(slug, locale);
   if (!project) return {};
-  return {
-    title: project.title,
-    description: project.summary,
-    alternates: {
-      canonical: `/${locale}/projects/${slug}`,
-      languages: Object.fromEntries(locales.map((l) => [htmlLang[l], `/${l}/projects/${slug}`])),
-    },
-  };
+  const dict = await getDictionary();
+  return pageMeta({ locale, path: `/projects/${slug}`, site: dict.meta.title, title: project.title, description: project.summary });
 }
 
 export default async function ProjectPage({ params }: PageProps<"/[lang]/projects/[slug]">) {

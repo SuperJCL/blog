@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { htmlLang, locales } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { pageTitle, siteUrl } from "@/lib/site";
 import { fontVariables } from "../fonts";
 import "../globals.css";
 
@@ -9,12 +10,15 @@ export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
 }
 
+// Pages add canonical, hreflang and share fields with lib/site.ts's pageMeta; relative URLs resolve
+// against metadataBase.
 export async function generateMetadata(): Promise<Metadata> {
   const dict = await getDictionary();
   return {
+    metadataBase: new URL(siteUrl),
     title: {
       default: dict.meta.title,
-      template: `%s · ${dict.meta.title}`,
+      template: pageTitle("%s", dict.meta.title),
     },
     description: dict.meta.description,
   };

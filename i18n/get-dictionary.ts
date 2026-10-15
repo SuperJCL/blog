@@ -17,3 +17,8 @@ export async function getLocale(): Promise<Locale> {
 export async function getDictionary(): Promise<Dictionary> {
   return dictionaries[await getLocale()]();
 }
+
+// For code that gets the locale from its params instead of the root segment (share images).
+export function dictionaryFor(locale: Locale): Promise<Dictionary> {
+  return dictionaries[locale]();
+}
