@@ -22,6 +22,14 @@ export default async function BlogPage() {
       <header className="flex flex-col gap-5 pb-14">
         <h1 className="type-display text-title">{dict.blog.title}</h1>
         <p className="max-w-2xl text-lede text-pretty text-muted">{dict.blog.intro}</p>
+        {/* A plain link: the feed is a file, not a page. */}
+        <a
+          href={`/${locale}/feed.xml`}
+          type="application/rss+xml"
+          className="self-start font-mono text-xs tracking-widest text-muted uppercase hover:text-fg"
+        >
+          {dict.blog.rss} <span aria-hidden="true">↗</span>
+        </a>
       </header>
       {posts.length === 0 ? (
         <p className="text-muted">{dict.blog.empty}</p>

@@ -42,7 +42,8 @@ export function pageMeta({ locale, path, site, title, home = false, description,
   return {
     title: home ? { absolute: title } : title,
     description,
-    alternates: { canonical: url, languages: languageLinks(path, languages) },
+    // The RSS feed in the page's language (app/[lang]/feed.xml), for readers that discover feeds from any page.
+    alternates: { canonical: url, languages: languageLinks(path, languages), types: { "application/rss+xml": `/${locale}/feed.xml` } },
     openGraph: {
       type: article ? "article" : "website",
       url,

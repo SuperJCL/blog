@@ -14,6 +14,7 @@ Chenglin Jiang 的个人主页 + 技术博客。
 - 博客内容方案：MDX + content-collections，文章放在 `content/posts/<slug>.<lang>.mdx`，同一 slug 的不同语言版本互为译文；作品案例放在 `content/projects/<slug>.<lang>.mdx`，必须中英文都有
 - MDX 构建：remark-gfm（表格等 Markdown 扩展语法），shiki（构建时代码高亮，配色在 `lib/code-theme.ts`，取自设计变量）；改了 MDX 插件或配色后要删掉 `.content-collections/cache`
 - SEO：站点地址只在 `lib/site.ts` 写一次；每个页面的 metadata 都用其中的 `pageMeta`（canonical、hreflang 含 x-default、分享卡片）；新页面要加进 `app/sitemap.ts`。分享图由各路由的 `opengraph-image.tsx` 调 `lib/og.tsx` 生成，首页和关于页带人像，人像源是 `assets/share-portrait.jpg`（从 `public/portrait.webp` 导出，人像换了要重新导出）
+- RSS：`app/[lang]/feed.xml`，每种语言一份，条目和该语言的博客列表一致（没有译文的文章两边都有），只含摘要
 
 # 双语
 

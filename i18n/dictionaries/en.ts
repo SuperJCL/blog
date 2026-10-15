@@ -60,6 +60,7 @@ const en = {
   blog: {
     title: "Blog",
     intro: "Notes on 3D maps, data visualization and frontend engineering, and on building this site.",
+    rss: "RSS feed",
     empty: "No posts yet.",
     allPosts: "All posts",
     contents: "On this page",
