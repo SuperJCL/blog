@@ -5,6 +5,7 @@ import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { HeaderFrame } from "./header-frame";
 import { LocaleName, LocaleSwitcher } from "./locale-switcher";
 import { NavLinks, NavList } from "./nav-links";
+import { ThemeToggle } from "./theme-toggle";
 
 const pill = "items-center rounded-full px-3 py-1";
 
@@ -22,18 +23,19 @@ export async function SiteHeader() {
   const switcherClass = `${pill} inline-flex border border-line hover:border-fg`;
 
   return (
-    <HeaderFrame className="fixed inset-x-0 top-0 z-20 flex h-nav items-center justify-between gap-4 border-b border-transparent bg-bg/85 px-gutter text-fg backdrop-blur-md transition-colors data-scrolled:border-line hero-on:bg-transparent hero-on:bg-linear-to-b hero-on:from-bg/80 hero-on:to-transparent hero-on:backdrop-blur-none">
-      <Link href={`/${locale}`} className="flex items-center gap-2 font-display text-xl leading-none uppercase">
+    <HeaderFrame className="fixed inset-x-0 top-0 z-20 flex h-nav items-center justify-between gap-3 border-b border-transparent bg-bg/85 px-gutter text-fg backdrop-blur-md transition-colors data-scrolled:border-line hero-on:bg-transparent hero-on:bg-linear-to-b hero-on:from-bg/80 hero-on:to-transparent hero-on:backdrop-blur-none">
+      <Link href={`/${locale}`} className="flex shrink-0 items-center gap-2 font-display text-xl leading-none whitespace-nowrap uppercase">
         <span aria-hidden="true" className="grid size-6 place-items-center rounded-full bg-accent text-sm text-accent-ink">
           ✦
         </span>
-        {/* Phones get the short form: the full English name and three links don't fit in 375px. */}
+        {/* Phones get the short form: the full English name and three links don't fit in 375px. Below sm the
+            gaps are tighter too, so links, language and theme fit on one line down to 360px. */}
         <span className="max-sm:hidden">{dict.meta.title}</span>
         <span className="sm:hidden">{dict.nav.brandShort}</span>
       </Link>
       <nav
         aria-label={dict.nav.label}
-        className="flex items-center gap-3 font-mono text-xs tracking-wider uppercase sm:gap-4 sm:tracking-widest md:gap-7"
+        className="flex items-center gap-2 font-mono text-xs tracking-wider whitespace-nowrap uppercase sm:gap-4 sm:tracking-widest md:gap-7"
       >
         <Suspense fallback={<NavList items={items} />}>
           <NavLinks items={items} />
@@ -53,6 +55,7 @@ export async function SiteHeader() {
             className={switcherClass}
           />
         </Suspense>
+        <ThemeToggle label={dict.nav.theme} className="grid size-6 shrink-0 place-items-center rounded-full border border-line hover:border-fg sm:size-7" />
         <Link
           href={`/${locale}/about#contact`}
           className={`${pill} hidden gap-1.5 bg-accent font-medium text-accent-ink md:inline-flex`}

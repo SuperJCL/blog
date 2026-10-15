@@ -44,7 +44,7 @@ Chenglin Jiang 的个人主页 + 技术博客。
 
 - 变量位置：颜色、字号、间距、缓动在 `app/globals.css`，字体在 `app/fonts.ts`，JS 驱动的弹簧参数在 `lib/motion.ts`
 - 只用变量生成的工具类，例如 `bg-bg`、`text-fg`、`text-muted`、`border-line`、`bg-surface`、`font-display`、`max-w-measure`；Tailwind 默认色板已关闭
-- 颜色：亮色、暗色各一套，默认跟随系统；`<html data-theme>` 留给阶段 4 的暗色模式切换
+- 颜色：亮色、暗色各一套，默认跟随系统；顶栏按钮切换后记在 localStorage，由 `<html data-theme>` 生效（`lib/theme.ts`，head 里的脚本在首次绘制前设好，不闪屏）。按当前主题切换样式用 `theme-dark:` 变体；画布要在 `data-theme` 变化时重画；CSS 变量够不着的地方（分享图、theme-color）用 `lib/palette.ts` 从 `globals.css` 读色值
 - `.stage` 区块在两种主题下都是暗色，用于首页首屏和代码块
 - 荧光绿：`accent` 只作填充，上面的文字用 `accent-ink`；作文字、细线、焦点框时用 `accent-text`（亮色下是深绿）
 - 字体：标题 Anton，英文正文 Instrument Sans，标签和代码 IBM Plex Mono，中文 Noto Sans SC（标题 900）；英文页上零星的中文（语言切换按钮的"中文"）用系统中文字体 `font-zh-system`，不为几个字加载 Noto

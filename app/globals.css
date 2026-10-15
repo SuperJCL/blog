@@ -142,7 +142,8 @@
     }
   }
 
-  /* data-theme on <html> is the hook for the dark-mode toggle (stage 4).
+  /* data-theme on <html> is the visitor's choice from the header toggle (lib/theme.ts); without it the
+     system setting applies (the media query above).
      .stage is a block that stays dark in both themes: the homepage hero, code panels.
      [data-hero-tint] elements (header, screen dots) turn dark while the homepage hero is showing. */
   :root[data-theme="dark"],
@@ -211,6 +212,19 @@
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* The page's theme is dark: chosen with the toggle, or, with no choice made, by the system setting.
+   (Inside .stage blocks the colors are dark anyway; this follows the page, e.g. for the toggle's icon.) */
+@custom-variant theme-dark {
+  :root[data-theme="dark"] & {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) & {
+      @slot;
     }
   }
 }

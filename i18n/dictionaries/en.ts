@@ -8,6 +8,7 @@ const en = {
   nav: {
     label: "Main",
     skip: "Skip to content",
+    theme: "Dark theme",
     brandShort: "CJ",
     projects: "Projects",
     blog: "Blog",

@@ -9,6 +9,7 @@ const zh: Dictionary = {
   nav: {
     label: "主导航",
     skip: "跳到正文",
+    theme: "暗色模式",
     brandShort: "蒋承霖",
     projects: "作品",
     blog: "博客",

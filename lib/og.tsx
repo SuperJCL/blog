@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { cacheLife } from "next/cache";
 import { ImageResponse } from "next/og";
 import type { Locale } from "@/i18n/config";
+import { palette } from "./palette";
 import { siteUrl } from "./site";
 
 // Share images (Open Graph; X reads them too): 1200×630 PNGs on the dark stage of direction D. Each route's
@@ -11,19 +12,6 @@ import { siteUrl } from "./site";
 
 export const shareSize = { width: 1200, height: 630 };
 export const shareType = "image/png";
-
-// Colors are the dark palette from app/globals.css, so the cards follow the design tokens.
-async function stagePalette() {
-  "use cache";
-  cacheLife("max");
-  const css = await readFile(join(process.cwd(), "app/globals.css"), "utf8");
-  const token = (name: string) => {
-    const value = new RegExp(`--dark-${name}:\\s*(#[0-9a-fA-F]{6})`).exec(css)?.[1];
-    if (!value) throw new Error(`--dark-${name} is missing from app/globals.css`);
-    return value;
-  };
-  return { bg: token("bg"), fg: token("fg"), muted: token("muted"), line: token("line"), accent: token("accent") };
-}
 
 // A JPEG copy of public/portrait.webp: the renderer draws no WebP. Re-export it when the portrait changes.
 async function portraitData() {
@@ -66,7 +54,7 @@ function titleSize(text: string, zh: boolean, narrow: boolean) {
 }
 
 export async function shareImage(card: ShareCard) {
-  const c = await stagePalette();
+  const c = await palette("dark"); // the stage's colors, from the design tokens
   const zhTitle = (card.titleLang ?? card.locale) === "zh";
   const zhUi = card.locale === "zh";
   const parts = typeof card.title === "string" ? [card.title] : card.title;

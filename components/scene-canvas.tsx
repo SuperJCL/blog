@@ -67,7 +67,10 @@ export function SceneCanvas({ scene, seed, room = false, className }: Props) {
     io.observe(canvas);
     const ro = new ResizeObserver(() => draw());
     ro.observe(canvas);
+    // Redraw when the theme changes: the system setting, or the header toggle (data-theme on <html>).
     darkScheme.addEventListener("change", draw);
+    const themeObserver = new MutationObserver(draw);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     reduce.addEventListener("change", start);
     draw();
 
@@ -75,6 +78,7 @@ export function SceneCanvas({ scene, seed, room = false, className }: Props) {
       cancelAnimationFrame(raf);
       io.disconnect();
       ro.disconnect();
+      themeObserver.disconnect();
       darkScheme.removeEventListener("change", draw);
       reduce.removeEventListener("change", start);
     };
