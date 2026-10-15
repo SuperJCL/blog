@@ -29,7 +29,7 @@ import { toScene, type City, type CityMeta, type Shapes } from "./city-data";
 
 // The Seattle demo's Three.js scene: every building extruded into one merged mesh (one draw call), flat layers
 // for land, water, parks and roads, orbit controls, GPU picking for hover and tap, two colourings, flights to
-// landmarks, and rendering only while something moves.
+// landmarks and a turn around them, and rendering only while something moves.
 // Three.js space: x east, y up, z south, in metres from the data's origin.
 
 export type CityPalette = { bg: string; surface: string; line: string; muted: string; fg: string; mark: string; blue: string; amber: string };
@@ -45,11 +45,12 @@ export type CityScene = {
   setColourMode(mode: ColourMode): void;
   legend(): Legend;
   flyTo(lat: number, lon: number, label: string): void;
+  orbit(on: boolean): void;
   resetView(): void;
   describeCentre(): BuildingInfo | null;
   dispose(): void;
 };
-type Options = { palette: CityPalette; reducedMotion: boolean; onInfo(event: InfoEvent): void };
+type Options = { palette: CityPalette; reducedMotion: boolean; onInfo(event: InfoEvent): void; onOrbit(on: boolean): void };
 
 // The opening view. Wide frames look from over Elliott Bay (west-southwest), between the downtown towers and
 // Seattle Center: the skyline in front, the Space Needle behind on the left. Upright frames (phones) look north
@@ -60,6 +61,7 @@ const VIEWS = {
 };
 const FLIGHT = { distance: 720, polar: 58, ms: 1600 }; // how a landmark is framed, and how long getting there takes
 const BREATH_MS = 2200; // one slow swell of an arrived-at landmark's highlight: far below the 3-per-second flash limit
+const ORBIT = { ms: 20000, ramp: 0.08 }; // one turn around what the camera looks at, easing in and out over the ramp
 const ROAD_WIDTH = [14, 8]; // metres: major, minor
 const TAP_SLOP = 6; // px a tap may move and still count as a tap
 
@@ -68,6 +70,11 @@ const mix = (a: Color, b: Color, t: number) => a.clone().lerp(b, t);
 // colour, towers rise into the accent.
 const heightT = (m: number) => MathUtils.clamp(Math.log1p(m / 6) / Math.log1p(250 / 6), 0, 1);
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+// A turn's progress: a steady speed in the middle, speeding up and slowing down over the ramp at either end.
+const orbitProgress = (t: number) => {
+  const r = ORBIT.ramp, v = 1 / (1 - r);
+  return t < r ? (v * t * t) / (2 * r) : t < 1 - r ? v * (t - r / 2) : 1 - (v * (1 - t) ** 2) / (2 * r);
+};
 
 function flatShapes(s: Shapes, q: number, y: number) {
   const positions: number[] = [], index: number[] = [];
@@ -364,12 +371,28 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     options.onInfo({ info: focus.info, x, y, width: w, height: h, pinned: true });
   };
 
+  // A turn: the camera circles once around what it looks at, a landmark it has flown to or the middle of the
+  // view, and the focus stays. A drag, zoom or flight stops it; one asked for during a flight starts on arrival.
+  // `done`: the share of the turn made so far.
+  let orbit: { elapsed: number; done: number } | null = null;
+  const setOrbit = (on: boolean) => {
+    if (on === (orbit !== null) || (on && options.reducedMotion)) return;
+    orbit = on ? { elapsed: 0, done: 0 } : null;
+    if (on) {
+      touched = true;
+      controls.autoRotate = false;
+      requestRender();
+    }
+    options.onOrbit(on);
+  };
+
   // A flight: target and camera ease to a new view along an arc; any drag cancels it. `arrive` runs at the end.
   type Flight = { fromTarget: Vector3; toTarget: Vector3; fromPos: Vector3; toPos: Vector3; start: number; lift: number; arrive?: () => void };
   let flight: Flight | null = null;
   const flyToView = (target: Vector3, position: Vector3, arrive?: () => void) => {
     touched = true;
     controls.autoRotate = false;
+    setOrbit(false);
     clearFocus();
     options.onInfo(null);
     highlight([]);
@@ -395,6 +418,7 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     controls.autoRotate = false;
     touched = true;
     if (flight) endFlight(false);
+    setOrbit(false);
     clearFocus();
     options.onInfo(null);
     highlight([]);
@@ -402,17 +426,27 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
 
   // ---------- frame loop ----------
 
-  // Render on demand: a frame loop runs only while the camera moves (damping, auto-rotate, a flight) and on
-  // screen. One frame is ever pending: update() fires "change", which may already have asked for the next one.
-  let raf = 0, dirty = true, visible = true;
+  // Render on demand: a frame loop runs only while the camera moves (damping, auto-rotate, a flight, a turn) and
+  // on screen. One frame is ever pending: update() fires "change", which may already have asked for the next one.
+  let raf = 0, dirty = true, visible = true, lastFrame = 0;
   const frame = (now: number) => {
     raf = 0;
+    // A turn advances by the time between frames, capped, so it pauses off screen rather than jumping ahead.
+    const dt = Math.min(now - (lastFrame || now), 50);
+    lastFrame = now;
     if (flight) {
       const t = Math.min(1, (now - flight.start) / FLIGHT.ms), e = easeInOut(t);
       controls.target.lerpVectors(flight.fromTarget, flight.toTarget, e);
       camera.position.lerpVectors(flight.fromPos, flight.toPos, e);
       camera.position.y += Math.sin(Math.PI * e) * flight.lift;
       if (t === 1) endFlight(true);
+    } else if (orbit) {
+      // The same way round as the opening drift; turning by the step leaves any keyboard pan in place.
+      orbit.elapsed = Math.min(ORBIT.ms, orbit.elapsed + dt);
+      const done = orbitProgress(orbit.elapsed / ORBIT.ms);
+      camera.position.sub(controls.target).applyAxisAngle(camera.up, -2 * Math.PI * (done - orbit.done)).add(controls.target);
+      orbit.done = done;
+      if (orbit.elapsed === ORBIT.ms) setOrbit(false);
     }
     const moved = controls.update() || flight !== null;
     const breathing = focus !== null && !options.reducedMotion;
@@ -430,7 +464,7 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       wholePending = false;
     }
     pinFocusLabel();
-    if (!raf && visible && (moved || controls.autoRotate || breathing)) raf = requestAnimationFrame(frame);
+    if (!raf && visible && (moved || controls.autoRotate || breathing || orbit)) raf = requestAnimationFrame(frame);
   };
   function requestRender() {
     dirty = true;
@@ -540,6 +574,7 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       const azimuth = MathUtils.radToDeg(new Spherical().setFromVector3(camera.position.clone().sub(controls.target)).theta);
       flyToView(target, viewPosition(target, Math.max(FLIGHT.distance, roof * 2.8), FLIGHT.polar, azimuth), () => startFocus(x, z, label));
     },
+    orbit: setOrbit,
     resetView() {
       const view = openingView();
       flyToView(view.target.clone(), viewPosition(view.target, view.distance, view.polar, view.azimuth));

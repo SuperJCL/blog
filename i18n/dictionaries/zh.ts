@@ -108,6 +108,7 @@ const zh: Dictionary = {
     byUse: "用途",
     categories: ["办公和商业", "住宅", "公共建筑", "其他"],
     flyTo: "飞往",
+    orbit: "环视",
     reset: "回到初始视角",
     arrived: "已到达{place}。",
     unnamed: "建筑",

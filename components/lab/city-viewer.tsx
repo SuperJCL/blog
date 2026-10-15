@@ -19,6 +19,7 @@ type Labels = {
   byUse: string;
   categories: string[];
   flyTo: string;
+  orbit: string;
   reset: string;
   arrived: string;
   unnamed: string;
@@ -54,8 +55,9 @@ const chip =
 
 // The 3D map of central Seattle. Three.js and the scene load with the data, after the page has painted; the
 // frame shows a status line until the city is up, or instead of it when the data or WebGL is missing. Under the
-// frame: the colouring, a reset, and landmarks to fly to. Hover (or tap) shows a building; with the frame
-// focused, Enter describes the one in the middle, for keyboard and screen-reader users.
+// frame: the colouring, landmarks to fly to, a turn around the view (not offered with reduced motion) and a
+// reset. Hover (or tap) shows a building; with the frame focused, Enter describes the one in the middle, for
+// keyboard and screen-reader users.
 export function CityViewer({ data, zh, places, preview, labels }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -66,6 +68,7 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
   const [hover, setHover] = useState<InfoEvent>(null);
   const [said, setSaid] = useState("");
   const [place, setPlace] = useState<string | null>(null);
+  const [orbiting, setOrbiting] = useState(false);
 
   useEffect(() => {
     const frame = frameRef.current, canvas = canvasRef.current;
@@ -85,7 +88,7 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
       .then(([city, { createCityScene }]) => {
         if (cancelled) return;
         try {
-          sceneRef.current = createCityScene(canvas, frame, city, { palette: readPalette(frame), reducedMotion: reduce, onInfo: setHover });
+          sceneRef.current = createCityScene(canvas, frame, city, { palette: readPalette(frame), reducedMotion: reduce, onInfo: setHover, onOrbit: setOrbiting });
           setLegend(sceneRef.current.legend());
           setStatus("ready");
         } catch {
@@ -233,7 +236,8 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
               {labels.byUse}
             </button>
           </div>
-          {/* Flights are actions, not toggles: the last place visited is only marked for the eye. */}
+          {/* Flights are actions, not toggles: the last place visited is only marked for the eye. The turn is a
+              toggle, pressed while it runs; it's a long camera move, so it isn't offered with reduced motion. */}
           <div role="group" aria-label={labels.flyTo} className="flex flex-wrap items-center gap-2 md:justify-end">
             <span className="type-label text-muted">{labels.flyTo}</span>
             {places.map((p) => (
@@ -241,6 +245,9 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
                 {p.name}
               </button>
             ))}
+            <button type="button" aria-pressed={orbiting} onClick={() => sceneRef.current?.orbit(!orbiting)} className={`${chip} motion-reduce:hidden`}>
+              {labels.orbit}
+            </button>
             <button type="button" onClick={() => { setPlace(null); sceneRef.current?.resetView(); }} className={chip}>
               {labels.reset}
             </button>

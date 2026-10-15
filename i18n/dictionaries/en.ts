@@ -110,6 +110,7 @@ const en = {
     byUse: "Use",
     categories: ["Office & commercial", "Residential", "Civic & public", "Other"],
     flyTo: "Fly to",
+    orbit: "Orbit",
     reset: "Reset view",
     arrived: "Now at {place}.",
     unnamed: "Building",
