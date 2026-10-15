@@ -2,9 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { localeCookie, localeNames, type Locale } from "@/i18n/config";
+import { htmlLang, localeCookie, localeNames, type Locale } from "@/i18n/config";
 
 const oneYear = 60 * 60 * 24 * 365;
+
+// The other language's name in that language, tagged so screen readers say it right. It is also the link's
+// accessible name, so voice control can use what's on screen; "switch language" goes in the title as a hint.
+// On English pages 中文 is set in a system font (see --font-zh-system in globals.css).
+export function LocaleName({ locale }: { locale: Locale }) {
+  return (
+    <span lang={htmlLang[locale]} className="zh:font-zh-system">
+      {localeNames[locale]}
+    </span>
+  );
+}
 
 type Props = {
   currentLocale: Locale;
@@ -22,13 +33,13 @@ export function LocaleSwitcher({ currentLocale, targetLocale, label, className }
     <Link
       href={href}
       hrefLang={targetLocale}
-      aria-label={label}
+      title={label}
       className={className}
       onClick={() => {
         document.cookie = `${localeCookie}=${targetLocale}; path=/; max-age=${oneYear}; samesite=lax`;
       }}
     >
-      {localeNames[targetLocale]}
+      <LocaleName locale={targetLocale} />
     </Link>
   );
 }

@@ -95,7 +95,7 @@ export default async function ProjectsPage() {
                     <p className="self-start rounded-full bg-accent/15 px-3 py-1 text-sm">{t.confidential}</p>
                   )}
                   <span className="self-start border-b border-current pb-px font-semibold text-accent-text">
-                    {dict.home.viewCase} →
+                    {dict.home.viewCase} <span aria-hidden="true">→</span>
                   </span>
                 </div>
               </Link>

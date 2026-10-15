@@ -62,7 +62,7 @@ export default async function ProjectPage({ params }: PageProps<"/[lang]/project
     <Page>
       <header className="flex flex-col gap-6 pb-12">
         <Link href={`/${locale}/projects`} className="self-start font-mono text-xs tracking-widest text-muted uppercase hover:text-fg">
-          ← {t.all}
+          <span aria-hidden="true">←</span> {t.all}
         </Link>
         {index >= 0 && (
           <p className="flex gap-3 type-kicker text-muted">

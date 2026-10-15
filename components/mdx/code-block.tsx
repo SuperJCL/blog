@@ -22,14 +22,16 @@ export async function CodeBlock({ children }: { children?: ReactNode }) {
   const fence = /language-([\w-]+)/.exec(code?.props.className ?? "")?.[1];
   const language = fence ? (LANGUAGES[fence] ?? fence) : null;
   return (
-    // color-scheme keeps the native scrollbar dark on the light theme too.
-    <div className="overflow-hidden rounded-md border border-code-line bg-code text-code-fg [color-scheme:dark]">
+    // .stage keeps the panel's tokens dark on the light theme too: the focus ring in the bright accent, a dark
+    // native scrollbar.
+    <div className="stage overflow-hidden rounded-md border border-code-line bg-code text-code-fg">
       <div className="flex items-center justify-between gap-4 border-b border-code-line py-2 pr-2 pl-4 font-mono text-xs tracking-wide text-code-muted">
         <span>{language}</span>
         <CopyButton text={textOf(children).replace(/\n$/, "")} label={dict.blog.copy} done={dict.blog.copied} />
       </div>
-      {/* Focusable, so a code line wider than the panel can be scrolled from the keyboard. */}
-      <pre tabIndex={0} className="overflow-x-auto px-4 py-4 font-mono text-snippet tracking-normal">
+      {/* Focusable, so a code line wider than the panel can be scrolled from the keyboard. The ring sits inside:
+          outside it would be clipped by the panel. */}
+      <pre tabIndex={0} className="overflow-x-auto px-4 py-4 font-mono text-snippet tracking-normal focus-visible:-outline-offset-2">
         {children}
       </pre>
     </div>

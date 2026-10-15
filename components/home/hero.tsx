@@ -277,9 +277,11 @@ export function Hero({ title, roles, cta, ctaHref, cards, cardsLabel, marquee, s
     const onMotionChange = () => (reduce.matches ? still() : wake());
 
     // Ratio, not isIntersecting: a hero that only touches the viewport edge still "intersects". The 0.01 step
-    // makes the observer report the moment it leaves.
+    // makes the observer report the moment it leaves. Off screen, data-idle also pauses the CSS animations,
+    // the typed line and the clock.
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.intersectionRatio > 0;
+      section.toggleAttribute("data-idle", !visible);
       if (visible) wake();
     }, { threshold: [0, 0.01] });
     io.observe(section);
@@ -314,6 +316,10 @@ export function Hero({ title, roles, cta, ctaHref, cards, cardsLabel, marquee, s
     if (!el || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let word = 0, chars = roles[0].length, deleting = true, timer = 0;
     const type = () => {
+      if (sectionRef.current?.hasAttribute("data-idle")) {
+        timer = window.setTimeout(type, 500);
+        return;
+      }
       const text = roles[word];
       if (deleting) {
         el.textContent = text.slice(0, --chars);
@@ -343,6 +349,7 @@ export function Hero({ title, roles, cta, ctaHref, cards, cardsLabel, marquee, s
     if (!el) return;
     const pad = (n: number) => String(n).padStart(2, "0");
     const tick = () => {
+      if (sectionRef.current?.hasAttribute("data-idle")) return;
       const d = new Date();
       el.textContent = `${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
     };

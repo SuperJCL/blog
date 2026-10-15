@@ -286,6 +286,13 @@
   animation: hero-pulse 2s ease-out infinite;
 }
 
+/* Off screen (data-idle, set by hero.tsx) nothing keeps animating: the caret, the status pulse, the marquee. */
+.hero[data-idle] *,
+.hero[data-idle] *::before,
+.hero[data-idle] *::after {
+  animation-play-state: paused;
+}
+
 /* Entrance */
 .hero-overlay > *,
 .hero-quad {

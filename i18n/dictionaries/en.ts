@@ -6,6 +6,7 @@ const en = {
   },
   nav: {
     label: "Main",
+    skip: "Skip to content",
     brandShort: "CJ",
     projects: "Projects",
     blog: "Blog",

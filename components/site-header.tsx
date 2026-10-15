@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { localeNames, locales } from "@/i18n/config";
+import { locales } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { HeaderFrame } from "./header-frame";
-import { LocaleSwitcher } from "./locale-switcher";
+import { LocaleName, LocaleSwitcher } from "./locale-switcher";
 import { NavLinks, NavList } from "./nav-links";
 
 const pill = "items-center rounded-full px-3 py-1";
@@ -41,8 +41,8 @@ export async function SiteHeader() {
         {/* Fallback for prerendered shells where the pathname is unknown: link to the other home page. */}
         <Suspense
           fallback={
-            <Link href={`/${targetLocale}`} hrefLang={targetLocale} className={switcherClass}>
-              {localeNames[targetLocale]}
+            <Link href={`/${targetLocale}`} hrefLang={targetLocale} title={dict.localeSwitcher.label} className={switcherClass}>
+              <LocaleName locale={targetLocale} />
             </Link>
           }
         >

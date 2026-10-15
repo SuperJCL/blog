@@ -110,6 +110,27 @@ export type AuraFrame = {
   now: number;
 };
 
+// Particles are drawn in batches that share a color and one of 32 alpha levels: one fill per batch, instead of an
+// alpha change and a fillRect per particle (about 1,600 a frame). Each batch is x, y, size triples, reused.
+const LEVELS = 32;
+const plainBatches: number[][] = Array.from({ length: LEVELS }, () => []);
+const litBatches: number[][] = Array.from({ length: LEVELS }, () => []);
+function batch(batches: number[][], x: number, y: number, s: number, a: number) {
+  batches[Math.min(LEVELS - 1, Math.floor(a * LEVELS))].push(x - s / 2, y - s / 2, s);
+}
+function flush(ctx: CanvasRenderingContext2D, batches: number[][], color: string) {
+  ctx.fillStyle = color;
+  for (let level = 0; level < LEVELS; level++) {
+    const b = batches[level];
+    if (!b.length) continue;
+    ctx.globalAlpha = (level + 0.5) / LEVELS;
+    ctx.beginPath();
+    for (let i = 0; i < b.length; i += 3) ctx.rect(b[i], b[i + 1], b[i + 2], b[i + 2]);
+    ctx.fill();
+    b.length = 0;
+  }
+}
+
 // The halo and rim particles; those in the open card's quarter turn accent, with a dashed leader line to the card.
 export function drawAura(ctx: CanvasRenderingContext2D, w: number, h: number, f: AuraFrame) {
   for (let i = 0; i < 4; i++) {
@@ -146,34 +167,25 @@ export function drawAura(ctx: CanvasRenderingContext2D, w: number, h: number, f:
     return [x + p.ox, y + p.oy];
   };
 
-  const lit: number[] = [];
-  ctx.globalCompositeOperation = "lighter";
-  ctx.fillStyle = f.colors.fg;
   for (const p of f.halo) {
     if (dt) p.th += p.sp * dt;
     const cos = Math.cos(p.th), sin = Math.sin(p.th);
     const boost = f.glow[quarterOf(fx + cos * Rx, fy + sin * Ry)], rr = p.rad * (1 + boost * 0.12);
     const [x, y] = settle(p, fx + cos * Rx * rr, fy + sin * Ry * rr);
     const a = Math.min(1, p.a * (0.75 + 0.25 * Math.sin(t * 2 + p.ph)) * (1 + boost * 0.8));
-    if (boost > 0.5) { lit.push(x, y, p.s * 1.15, a); continue; }
-    ctx.globalAlpha = a;
-    ctx.fillRect(x - p.s / 2, y - p.s / 2, p.s, p.s);
+    if (boost > 0.5) batch(litBatches, x, y, p.s * 1.15, a);
+    else batch(plainBatches, x, y, p.s, a);
   }
   for (const p of f.rim) {
     const hx = mapX(box.x + p.u * box.w), hy = mapY(box.y + p.v * box.h), drift = Math.sin(t * 0.8 + p.ph) * 1.5;
     const boost = f.glow[quarterOf(hx, hy)];
     const [x, y] = settle(p, hx + drift, hy - drift * 0.6);
     const a = Math.min(1, p.a * (0.7 + 0.3 * Math.sin(t * 3 + p.ph)) * (1 + boost * 0.5));
-    if (boost > 0.5) { lit.push(x, y, p.s, a); continue; }
-    ctx.globalAlpha = a;
-    ctx.fillRect(x - p.s / 2, y - p.s / 2, p.s, p.s);
+    batch(boost > 0.5 ? litBatches : plainBatches, x, y, p.s, a);
   }
-  ctx.fillStyle = f.colors.accent;
-  for (let i = 0; i < lit.length; i += 4) {
-    const s = lit[i + 2];
-    ctx.globalAlpha = lit[i + 3];
-    ctx.fillRect(lit[i] - s / 2, lit[i + 1] - s / 2, s, s);
-  }
+  ctx.globalCompositeOperation = "lighter";
+  flush(ctx, plainBatches, f.colors.fg);
+  flush(ctx, litBatches, f.colors.accent);
   ctx.globalCompositeOperation = "source-over";
 
   const q = f.active;

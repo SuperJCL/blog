@@ -202,10 +202,12 @@ export function SlidePager({ slides, dotsLabel, children }: Props) {
 
   return (
     <>
-      <main ref={scrollerRef} className="slide-scroller relative">
+      {/* The skip link's target; once focused, the arrow keys page from here. */}
+      <main id="main" tabIndex={-1} ref={scrollerRef} className="slide-scroller relative">
         {children}
       </main>
-      <nav aria-label={dotsLabel} data-hero-tint className="fixed top-1/2 right-1 z-20 flex -translate-y-1/2 flex-col gap-0.5 sm:right-3">
+      {/* 24px buttons around small dots: the smallest target size WCAG 2.2 accepts for controls this close together. */}
+      <nav aria-label={dotsLabel} data-hero-tint className="fixed top-1/2 right-1 z-20 flex -translate-y-1/2 flex-col sm:right-3">
         {slides.map((slide, i) => (
           <button
             key={slide.id}
@@ -213,7 +215,7 @@ export function SlidePager({ slides, dotsLabel, children }: Props) {
             aria-label={slide.label}
             aria-current={i === active ? "true" : undefined}
             onClick={() => goToRef.current(i)}
-            className="group grid size-5 place-items-center"
+            className="group grid size-6 place-items-center"
           >
             <span className="size-2 rounded-full border border-muted transition group-aria-[current=true]:scale-125 group-aria-[current=true]:border-accent-text group-aria-[current=true]:bg-accent-text" />
           </button>

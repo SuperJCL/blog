@@ -61,7 +61,7 @@ export default async function PostPage({ params }: PageProps<"/[lang]/blog/[slug
       <div className="grid text-read wide:grid-cols-[minmax(0,1fr)_minmax(0,var(--container-measure))_minmax(0,1fr)] wide:gap-x-16">
         <header className="mb-10 flex flex-col gap-5 border-b border-line pb-10 wide:col-span-2 wide:col-start-2">
           <Link href={`/${locale}/blog`} className="self-start font-mono text-xs tracking-widest text-muted uppercase hover:text-fg">
-            ← {t.allPosts}
+            <span aria-hidden="true">←</span> {t.allPosts}
           </Link>
           {post.lang !== locale && (
             <p className="self-start rounded-full bg-accent/15 px-3 py-1 text-sm">{t.onlyIn[post.lang]}</p>

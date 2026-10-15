@@ -123,7 +123,7 @@ export function WorkScreen({ dict, locale, project, index, total }: WorkProps) {
             ))}
           </dl>
           <Link href={caseHref} className={textLink}>
-            {dict.home.viewCase} →
+            {dict.home.viewCase} <span aria-hidden="true">→</span>
           </Link>
         </div>
       </div>
@@ -163,7 +163,7 @@ export function PostsScreen({ dict, locale, posts }: ScreenProps & { posts: Post
           </ul>
         )}
         <Link href={`/${locale}/blog`} className={textLink}>
-          {dict.blog.allPosts} →
+          {dict.blog.allPosts} <span aria-hidden="true">→</span>
         </Link>
       </div>
     </section>
@@ -210,7 +210,7 @@ export function ContactScreen({ dict, locale }: ScreenProps) {
         </dl>
         <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-muted">
           <Link href={`/${locale}/about`} className={textLink}>
-            {dict.home.aboutMore} →
+            {dict.home.aboutMore} <span aria-hidden="true">→</span>
           </Link>
           <p>
             © {siteSince} {profile.name[locale]}

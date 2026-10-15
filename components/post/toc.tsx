@@ -43,7 +43,8 @@ export function Toc({ entries, label, variant }: Props) {
             aria-current={entry.id === current ? "location" : undefined}
             className={`-ml-px block border-l-2 border-transparent py-1.5 text-sm leading-snug text-muted hover:text-fg aria-[current=location]:border-accent-text aria-[current=location]:text-fg ${entry.depth === 3 ? "pl-7 text-[0.8125rem]" : "pl-3.5"}`}
           >
-            {numbers[i] && <span className="mr-2 font-mono text-[0.75em] text-accent-text">{numbers[i]}</span>}
+            {/* For the eye only, like the headings' own numbers: the link's name is the heading text. */}
+            {numbers[i] && <span aria-hidden="true" className="mr-2 font-mono text-[0.75em] text-accent-text">{numbers[i]}</span>}
             {entry.text}
           </a>
         </li>

@@ -31,6 +31,9 @@
   --font-display: var(--font-anton), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-sans: var(--font-instrument-sans), var(--font-noto-sans-sc), "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: var(--font-plex-mono), var(--font-noto-sans-sc), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* Chinese from system fonts only, for a few characters on English pages (the language switcher's 中文):
+     two glyphs aren't worth the ~120 KB of Noto slices they would pull in. */
+  --font-zh-system: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", sans-serif;
 
   /* Code panels are dark in both themes; lib/code-theme.ts colors highlighted code with these. */
   --color-code: #121211;
@@ -281,6 +284,29 @@
     color: var(--fg);
     -webkit-text-stroke: 0;
     font-weight: 700;
+  }
+}
+
+/* "Skip to content": the first Tab stop on every page, out of view until it has focus. Focused, it sits in the
+   middle of the header, over the brand. */
+@utility skip-link {
+  position: fixed;
+  top: calc(var(--spacing-nav) / 2);
+  left: var(--spacing-gutter);
+  z-index: 50;
+  padding: 0.6rem 1.1rem;
+  border-radius: 9999px;
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  font: 500 0.75rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  translate: 0 calc(-100% - var(--spacing-nav));
+  &:focus {
+    translate: 0 -50%;
+  }
+  &:lang(zh) {
+    text-transform: none;
   }
 }
 

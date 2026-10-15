@@ -22,9 +22,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
   const locale = await getLocale();
+  const dict = await getDictionary();
   return (
     <html lang={htmlLang[locale]} className={fontVariables}>
       <body className="flex min-h-dvh flex-col">
+        {/* Every page's <main> has id="main" (components/page.tsx, the homepage's slide pager). */}
+        <a href="#main" className="skip-link">
+          {dict.nav.skip}
+        </a>
         <SiteHeader />
         {children}
       </body>
