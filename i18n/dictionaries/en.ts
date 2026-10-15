@@ -93,6 +93,17 @@ const en = {
     expected: " (expected)",
     emailMe: "Email me",
   },
+  lab: {
+    kicker: "Lab · live demo",
+    viewerLabel: "Interactive 3D map of central Seattle with {buildings} buildings coloured by height",
+    loading: "Loading the city…",
+    failed: "The city data couldn't be loaded. Try reloading the page.",
+    noWebgl: "This browser can't show the 3D map: WebGL isn't available.",
+    hintPointer: "Drag to turn · scroll to zoom · right-drag to pan",
+    hintTouch: "Drag to turn · pinch to zoom · two fingers to pan",
+    hintKeys: "Arrow keys pan the map while it has focus.",
+    attribution: "© OpenStreetMap contributors",
+  },
 };
 
 export type Dictionary = typeof en;

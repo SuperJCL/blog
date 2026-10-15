@@ -394,6 +394,9 @@ writeFileSync(join(outDir, "city.json"), JSON.stringify({
   heightSource: ["tagged", "storeys", "type default"],
   categories: CATEGORIES,
   counts: { buildings: buildings.length, roads: roads.length, water: water.length, parks: parks.length },
+  // Blocks by where their height comes from (same order as heightSource), and the tallest, for the page text.
+  heightSourceCounts: [0, 1, 2].map((s) => buildings.filter((b) => b.source === s).length),
+  tallest: Math.round(Math.max(...buildings.map((b) => b.height))),
   sections,
   names,
 }));

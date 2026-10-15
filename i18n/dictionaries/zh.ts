@@ -91,6 +91,17 @@ const zh: Dictionary = {
     expected: "（预计）",
     emailMe: "发邮件",
   },
+  lab: {
+    kicker: "实验室 · 在线 demo",
+    viewerLabel: "西雅图市中心的交互式 3D 地图，{buildings} 个楼体按高度着色",
+    loading: "正在加载城市数据…",
+    failed: "城市数据加载失败，请刷新页面重试。",
+    noWebgl: "这个浏览器无法显示 3D 地图：不支持 WebGL。",
+    hintPointer: "拖动旋转 · 滚轮缩放 · 右键拖动平移",
+    hintTouch: "拖动旋转 · 双指缩放 · 双指拖动平移",
+    hintKeys: "地图获得焦点时，可用方向键平移。",
+    attribution: "© OpenStreetMap 贡献者",
+  },
 };
 
 export default zh;

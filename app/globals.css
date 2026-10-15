@@ -85,6 +85,8 @@
   --spacing-sticky: calc(var(--spacing-nav) + 1.5rem); /* where sticky labels stop, below the header */
   --container-page: 1320px; /* max-w-page */
   --container-measure: 38em; /* max-w-measure: about 38 Chinese characters per line at the element's own size */
+  --aspect-viewer: 16 / 9; /* the 3D demo's frame (aspect-viewer); taller on phones */
+  --aspect-viewer-tall: 4 / 5;
 
   /* Motion. Springs driven from JS are in lib/motion.ts. */
   --ease-reveal: cubic-bezier(0.16, 0.84, 0.24, 1); /* entrances */
