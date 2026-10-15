@@ -43,8 +43,10 @@ const CARD_WIDTH = 256; // max-w-64
 function cardPosition(e: NonNullable<InfoEvent>): React.CSSProperties {
   const below = e.y < e.height - 120 ? "14px" : "calc(-100% - 14px)";
   if (!e.pinned) return { left: e.x, top: e.y, transform: `translate(${e.x > e.width - CARD_WIDTH - 24 ? "calc(-100% - 14px)" : "14px"}, ${below})` };
-  const half = CARD_WIDTH / 2 + 8;
-  return { left: Math.min(Math.max(e.x, half), Math.max(half, e.width - half)), top: e.y, transform: `translate(-50%, ${below})` };
+  // A pinned point is a roof: the label sits above it where there's room, so the building stays in view. The
+  // point can be outside the frame (a tall roof); the label then stays at the nearest edge.
+  const half = CARD_WIDTH / 2 + 8, top = Math.min(Math.max(e.y, 12), e.height - 12);
+  return { left: Math.min(Math.max(e.x, half), Math.max(half, e.width - half)), top, transform: `translate(-50%, ${top > 132 ? "calc(-100% - 14px)" : "14px"})` };
 }
 
 const chip =
@@ -101,11 +103,14 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
     };
   }, [data]);
 
+  // A landmark's own name leads, with the building's map name under it when that differs.
   const describe = (info: BuildingInfo) => {
-    const name = info.name ? (zh ? (info.name.zh ?? info.name.en) : info.name.en) : labels.unnamed;
+    const mapName = info.name ? (zh ? (info.name.zh ?? info.name.en) : info.name.en) : null;
+    const name = info.label ?? mapName ?? labels.unnamed;
     const note = labels.heightNote[info.source];
     return {
       name,
+      also: info.label && mapName && mapName !== info.label ? mapName : null,
       facts: [
         labels.metres.replace("{n}", String(Math.round(info.height))) + (note ? (zh ? `（${note}）` : ` (${note})`) : ""),
         ...(info.levels ? [labels.floors.replace("{n}", String(info.levels))] : []),
@@ -121,7 +126,7 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
   };
   const fly = (p: Place) => {
     setPlace(p.id);
-    sceneRef.current?.flyTo(p.lat, p.lon);
+    sceneRef.current?.flyTo(p.lat, p.lon, p.name);
     setSaid(labels.arrived.replace("{place}", p.name));
   };
   const onKey = (event: React.KeyboardEvent) => {
@@ -180,6 +185,7 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
             style={cardPosition(hover)}
           >
             <span className="font-medium text-pretty">{card.name}</span>
+            {card.also && <span className="text-xs text-muted">{card.also}</span>}
             <span className="font-mono text-label text-muted">{card.facts.join(" · ")}</span>
           </div>
         )}

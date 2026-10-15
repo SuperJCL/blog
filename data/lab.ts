@@ -40,10 +40,11 @@ export const seattleDemo: LabDemo = {
     en: "{buildings} buildings of central Seattle from OpenStreetMap, extruded to their heights and drawn live with Three.js. Drag to look around.",
     zh: "西雅图市中心的 {buildings} 个楼体，数据来自 OpenStreetMap，按高度拉伸，用 Three.js 实时渲染。拖动画面四处看看。",
   },
-  // Places the camera can fly to, roughly north to south. Northeastern's campus is placed by its street address.
+  // Places the camera can fly to, roughly north to south; each point sits inside the building it names.
+  // Northeastern's Seattle campus is at 225 Terry Ave N, the Terry Thomas building.
   landmarks: [
     { id: "space-needle", name: { en: "Space Needle", zh: "太空针塔" }, lat: 47.6205, lon: -122.3493 },
-    { id: "northeastern", name: { en: "Northeastern University Seattle", zh: "东北大学西雅图校区" }, lat: 47.6203, lon: -122.3373 },
+    { id: "northeastern", name: { en: "Northeastern University Seattle", zh: "东北大学西雅图校区" }, lat: 47.62062, lon: -122.33754 },
     { id: "spheres", name: { en: "Amazon Spheres", zh: "亚马逊球体" }, lat: 47.6156, lon: -122.3396 },
     { id: "pike-place", name: { en: "Pike Place Market", zh: "派克市场" }, lat: 47.6097, lon: -122.3422 },
     { id: "library", name: { en: "Central Library", zh: "西雅图中央图书馆" }, lat: 47.6067, lon: -122.3325 },

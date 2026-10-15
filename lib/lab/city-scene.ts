@@ -14,6 +14,7 @@ import {
   MeshLambertMaterial,
   PerspectiveCamera,
   PlaneGeometry,
+  RingGeometry,
   Scene,
   ShaderMaterial,
   ShapeUtils,
@@ -33,7 +34,8 @@ import { toScene, type City, type CityMeta, type Shapes } from "./city-data";
 
 export type CityPalette = { bg: string; surface: string; line: string; muted: string; fg: string; mark: string; blue: string; amber: string };
 export type ColourMode = "height" | "use";
-export type BuildingInfo = { name: CityMeta["names"][number] | null; height: number; levels: number; source: number; category: number };
+// `label`: the landmark's own name, when the camera flew to it (the building's map name may differ).
+export type BuildingInfo = { name: CityMeta["names"][number] | null; label?: string; height: number; levels: number; source: number; category: number };
 // What's under the pointer (hover) or was tapped or asked about (pinned), at a point in the canvas, in CSS px;
 // `width` and `height` are the canvas's, for keeping a label beside the point inside it.
 export type InfoEvent = { info: BuildingInfo; x: number; y: number; width: number; height: number; pinned: boolean } | null;
@@ -42,7 +44,7 @@ export type CityScene = {
   setPalette(palette: CityPalette): void;
   setColourMode(mode: ColourMode): void;
   legend(): Legend;
-  flyTo(lat: number, lon: number): void;
+  flyTo(lat: number, lon: number, label: string): void;
   resetView(): void;
   describeCentre(): BuildingInfo | null;
   dispose(): void;
@@ -57,6 +59,7 @@ const VIEWS = {
   tall: { target: new Vector3(320, 0, 120), distance: 3300, polar: 56, azimuth: -22 },
 };
 const FLIGHT = { distance: 720, polar: 58, ms: 1600 }; // how a landmark is framed, and how long getting there takes
+const BREATH_MS = 2200; // one slow swell of an arrived-at landmark's highlight: far below the 3-per-second flash limit
 const ROAD_WIDTH = [14, 8]; // metres: major, minor
 const TAP_SLOP = 6; // px a tap may move and still count as a tap
 
@@ -209,6 +212,24 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
   const sameBuilding = new Map<number, number[]>();
   for (let k = 0; k < b.name.length; k++) if (b.name[k] >= 0) sameBuilding.set(b.name[k], [...(sameBuilding.get(b.name[k]) ?? []), k]);
   const blocksOf = (k: number) => (b.name[k] >= 0 ? sameBuilding.get(b.name[k])! : [k]);
+  // The block whose footprint holds a ground point (map metres: x east, y north), else the nearest within 50 m.
+  const blockAt = (x: number, north: number) => {
+    let best = -1, bestDistance = 50 * 50;
+    for (let k = 0; k < b.count.length; k++) {
+      const n = b.count[k], s = b.start[k];
+      let inside = false, cx = 0, cy = 0;
+      for (let i = 0, j = n - 1; i < n; j = i++) {
+        const xi = b.coords[2 * (s + i)] * q, yi = b.coords[2 * (s + i) + 1] * q, xj = b.coords[2 * (s + j)] * q, yj = b.coords[2 * (s + j) + 1] * q;
+        if (yi > north !== yj > north && x < ((xj - xi) * (north - yi)) / (yj - yi) + xi) inside = !inside;
+        cx += xi;
+        cy += yi;
+      }
+      if (inside) return k;
+      const d = (cx / n - x) ** 2 + (cy / n - north) ** 2;
+      if (d < bestDistance) { bestDistance = d; best = k; }
+    }
+    return best;
+  };
 
   // ---------- colour ----------
 
@@ -225,18 +246,31 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     for (let i = 0; i < n; i++) colours.setXYZ(v + i, colour.r * 0.5, colour.g * 0.5, colour.b * 0.5); // shaded foot
     for (let i = 0; i < n; i++) colours.setXYZ(v + n + i, colour.r, colour.g, colour.b);
   };
+  // Sends colours to the GPU at the next render: everything, or only the given blocks' vertices (the breathing
+  // highlight, per frame). A whole upload already waiting isn't narrowed by a later partial one.
+  let wholePending = false;
+  const upload = (blocks?: number[]) => {
+    if (!blocks) {
+      wholePending = true;
+      colours.clearUpdateRanges();
+    } else if (!wholePending) {
+      for (const k of blocks) colours.addUpdateRange(firstVertex[k] * 3, b.count[k] * 6);
+    }
+    colours.needsUpdate = true;
+  };
   const paintAll = () => {
     for (let k = 0; k < b.count.length; k++) paintBlock(k, blockColour(k, scratch));
     for (const k of highlighted) paintBlock(k, glow);
-    colours.needsUpdate = true;
+    upload();
     requestRender();
   };
   const highlight = (blocks: number[]) => {
     if (blocks.length === highlighted.length && blocks.every((k, i) => k === highlighted[i])) return;
     for (const k of highlighted) paintBlock(k, blockColour(k, scratch));
+    const changed = [...highlighted, ...blocks];
     highlighted = blocks;
     for (const k of highlighted) paintBlock(k, glow);
-    colours.needsUpdate = true;
+    upload(changed);
     requestRender();
   };
 
@@ -254,6 +288,7 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     ramp = [mix(c.surface, c.fg, 0.1), mix(c.surface, c.fg, 0.42), c.mark];
     kinds = [c.mark, c.blue, c.amber, mix(c.surface, c.fg, 0.3)]; // office & commercial, residential, civic, other
     glow = c.fg;
+    (ping.material as MeshBasicMaterial).color = c.mark;
     legendCache = {
       height: { colours: ramp.map((x) => `#${x.getHexString()}`), ticks: [10, 50, 150].map((metres) => ({ metres, at: heightT(metres) })) },
       use: kinds.map((x) => `#${x.getHexString()}`),
@@ -287,33 +322,80 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
   controls.keyPanSpeed = 30;
   controls.listenToKeyEvents(keyTarget);
 
-  // A flight: target and camera ease to a new view along an arc; any drag cancels it.
-  type Flight = { fromTarget: Vector3; toTarget: Vector3; fromPos: Vector3; toPos: Vector3; start: number; lift: number };
+  // A landmark the camera has arrived at: its building breathes in the highlight colour, a ring pings out from
+  // its foot, and its label stays pinned to the roof, until someone moves the camera or points elsewhere.
+  type Focus = { info: BuildingInfo; anchor: Vector3; radius: number; start: number; x: number; y: number };
+  let focus: Focus | null = null;
+  const ping = new Mesh(new RingGeometry(0.88, 1, 72).rotateX(-Math.PI / 2), new MeshBasicMaterial({ transparent: true, depthWrite: false }));
+  ping.visible = false;
+  ping.position.y = 0.6;
+  scene.add(ping);
+  const clearFocus = () => {
+    focus = null;
+    ping.visible = false;
+  };
+  const roofOf = (blocks: number[]) => Math.max(...blocks.map((i) => b.height[i] / 10));
+  const startFocus = (x: number, z: number, label: string) => {
+    const k = blockAt(x, -z);
+    if (k < 0) return;
+    const blocks = blocksOf(k);
+    highlight(blocks);
+    // The ring starts just outside the footprint.
+    let radius = 0;
+    for (const i of blocks) for (let v = 0; v < b.count[i]; v++) {
+      const p = 2 * (b.start[i] + v);
+      radius = Math.max(radius, Math.hypot(b.coords[p] * q - x, -b.coords[p + 1] * q - z));
+    }
+    focus = { info: { ...infoOf(k), label }, anchor: new Vector3(x, roofOf(blocks), z), radius: radius + 12, start: performance.now(), x: NaN, y: NaN };
+    ping.position.set(x, 0.6, z);
+    ping.scale.setScalar(focus.radius * 1.4);
+    (ping.material as MeshBasicMaterial).opacity = 0.7;
+    ping.visible = true;
+    requestRender();
+  };
+  const breath = new Color(), anchorOnScreen = new Vector3();
+  const pinFocusLabel = () => {
+    if (!focus) return;
+    anchorOnScreen.copy(focus.anchor).project(camera);
+    const w = canvas.clientWidth, h = canvas.clientHeight, x = ((anchorOnScreen.x + 1) / 2) * w, y = ((1 - anchorOnScreen.y) / 2) * h;
+    if (anchorOnScreen.z > 1 || (Math.abs(x - focus.x) < 0.5 && Math.abs(y - focus.y) < 0.5)) return;
+    focus.x = x;
+    focus.y = y;
+    options.onInfo({ info: focus.info, x, y, width: w, height: h, pinned: true });
+  };
+
+  // A flight: target and camera ease to a new view along an arc; any drag cancels it. `arrive` runs at the end.
+  type Flight = { fromTarget: Vector3; toTarget: Vector3; fromPos: Vector3; toPos: Vector3; start: number; lift: number; arrive?: () => void };
   let flight: Flight | null = null;
-  const flyToView = (target: Vector3, position: Vector3) => {
+  const flyToView = (target: Vector3, position: Vector3, arrive?: () => void) => {
     touched = true;
     controls.autoRotate = false;
+    clearFocus();
     options.onInfo(null);
     highlight([]);
     if (options.reducedMotion) {
       controls.target.copy(target);
       camera.position.copy(position);
       controls.update();
+      arrive?.();
       requestRender();
       return;
     }
-    flight = { fromTarget: controls.target.clone(), toTarget: target, fromPos: camera.position.clone(), toPos: position, start: performance.now(), lift: camera.position.distanceTo(position) * 0.2 };
+    flight = { fromTarget: controls.target.clone(), toTarget: target, fromPos: camera.position.clone(), toPos: position, start: performance.now(), lift: camera.position.distanceTo(position) * 0.2, arrive };
     controls.enableDamping = false;
     requestRender();
   };
-  const endFlight = () => {
+  const endFlight = (arrived: boolean) => {
+    const arrive = flight?.arrive;
     flight = null;
     controls.enableDamping = !options.reducedMotion;
+    if (arrived) arrive?.();
   };
   controls.addEventListener("start", () => {
     controls.autoRotate = false;
     touched = true;
-    if (flight) endFlight();
+    if (flight) endFlight(false);
+    clearFocus();
     options.onInfo(null);
     highlight([]);
   });
@@ -330,14 +412,25 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       controls.target.lerpVectors(flight.fromTarget, flight.toTarget, e);
       camera.position.lerpVectors(flight.fromPos, flight.toPos, e);
       camera.position.y += Math.sin(Math.PI * e) * flight.lift;
-      if (t === 1) endFlight();
+      if (t === 1) endFlight(true);
     }
     const moved = controls.update() || flight !== null;
-    if (moved || dirty) {
+    const breathing = focus !== null && !options.reducedMotion;
+    if (breathing) {
+      // The building swells from its own colour to the highlight and back; the ring grows outward and fades.
+      const phase = ((now - focus!.start) % BREATH_MS) / BREATH_MS, w = 0.5 + 0.5 * Math.cos(2 * Math.PI * phase);
+      for (const k of highlighted) paintBlock(k, blockColour(k, breath).lerp(glow, w));
+      upload(highlighted);
+      ping.scale.setScalar(focus!.radius * (1 + 1.4 * phase));
+      (ping.material as MeshBasicMaterial).opacity = 0.85 * (1 - phase);
+    }
+    if (moved || dirty || breathing) {
       renderer.render(scene, camera);
       dirty = false;
+      wholePending = false;
     }
-    if (!raf && visible && (moved || controls.autoRotate)) raf = requestAnimationFrame(frame);
+    pinFocusLabel();
+    if (!raf && visible && (moved || controls.autoRotate || breathing)) raf = requestAnimationFrame(frame);
   };
   function requestRender() {
     dirty = true;
@@ -365,8 +458,11 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     source: b.heightSource[k],
     category: b.category[k],
   });
+  // A hover over empty ground or the focused building leaves a focus in place; anything else replaces it.
   const show = (x: number, y: number, pinned: boolean) => {
     const k = pick(x, y);
+    if (focus && !pinned && (k < 0 || highlighted.includes(k))) return focus.info;
+    clearFocus();
     if (k < 0) {
       highlight([]);
       options.onInfo(null);
@@ -389,7 +485,7 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     });
   };
   const onLeave = (event: PointerEvent) => {
-    if (event.pointerType !== "mouse") return;
+    if (event.pointerType !== "mouse" || focus) return;
     hoverAt = null;
     highlight([]);
     options.onInfo(null);
@@ -437,10 +533,12 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       paintAll();
     },
     legend: () => legendCache!,
-    flyTo(lat, lon) {
-      const { x, z } = toScene(city.meta, lat, lon), target = new Vector3(x, 0, z);
+    // Tall landmarks are framed whole: the camera looks at a point partway up and stands back with the height.
+    flyTo(lat, lon, label) {
+      const { x, z } = toScene(city.meta, lat, lon), k = blockAt(x, -z), roof = k >= 0 ? roofOf(blocksOf(k)) : 0;
+      const target = new Vector3(x, roof * 0.45, z);
       const azimuth = MathUtils.radToDeg(new Spherical().setFromVector3(camera.position.clone().sub(controls.target)).theta);
-      flyToView(target, viewPosition(target, FLIGHT.distance, FLIGHT.polar, azimuth));
+      flyToView(target, viewPosition(target, Math.max(FLIGHT.distance, roof * 2.8), FLIGHT.polar, azimuth), () => startFocus(x, z, label));
     },
     resetView() {
       const view = openingView();
@@ -459,7 +557,7 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointerup", onUp);
       controls.dispose();
-      for (const object of [ground, water, parks, minor, major, buildings, roofs]) {
+      for (const object of [ground, water, parks, minor, major, buildings, roofs, ping]) {
         object.geometry.dispose();
         (object.material as MeshBasicMaterial).dispose();
       }
