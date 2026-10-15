@@ -61,9 +61,10 @@ export function SkillsScreen({ dict, locale }: ScreenProps) {
   );
 }
 
-type WorkProps = ScreenProps & { project: Project; index: number; total: number };
+// `demo`: a live demo that goes with this project, linked under the case study.
+type WorkProps = ScreenProps & { project: Project; index: number; total: number; demo?: { href: string; label: string } };
 
-export function WorkScreen({ dict, locale, project, index, total }: WorkProps) {
+export function WorkScreen({ dict, locale, project, index, total, demo }: WorkProps) {
   const id = `work-${index + 1}`;
   const caseHref = `/${locale}/projects/${project.slug}`;
   const meta = [
@@ -81,7 +82,7 @@ export function WorkScreen({ dict, locale, project, index, total }: WorkProps) {
           href={caseHref}
           tabIndex={-1}
           aria-hidden="true"
-          className="group relative mb-6 block aspect-video w-full translate-y-(--vy) overflow-hidden border border-line bg-surface will-change-transform md:absolute md:top-slide-top md:right-gutter md:mb-0 md:w-[min(52vw,820px)]"
+          className="group relative mb-6 block aspect-video w-full translate-y-(--vy) overflow-hidden border border-line bg-surface will-change-transform md:absolute md:top-slide-top md:right-gutter md:mb-0 md:w-work-cover"
         >
           <Image
             src={project.cover.src}
@@ -122,9 +123,17 @@ export function WorkScreen({ dict, locale, project, index, total }: WorkProps) {
               </div>
             ))}
           </dl>
-          <Link href={caseHref} className={textLink}>
-            {dict.home.viewCase} <span aria-hidden="true">→</span>
-          </Link>
+          {/* Side by side, so a demo link doesn't make the block taller and push it into the cover. */}
+          <div className="flex flex-wrap gap-x-7 gap-y-3">
+            <Link href={caseHref} className={textLink}>
+              {dict.home.viewCase} <span aria-hidden="true">→</span>
+            </Link>
+            {demo && (
+              <Link href={demo.href} className={textLink}>
+                {demo.label} <span aria-hidden="true">→</span>
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </section>

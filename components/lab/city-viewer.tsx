@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { loadCity } from "@/lib/lab/city-data";
 import type { BuildingInfo, CityPalette, CityScene, ColourMode, InfoEvent, Legend } from "@/lib/lab/city-scene";
@@ -27,7 +28,8 @@ type Labels = {
   nothingThere: string;
 };
 type Place = { id: string; name: string; lat: number; lon: number };
-type Props = { data: string; zh: boolean; places: Place[]; labels: Labels };
+type Preview = { src: string; width: number; height: number; alt: string };
+type Props = { data: string; zh: boolean; places: Place[]; preview: Preview; labels: Labels };
 
 // The tokens where the viewer sits, so the city follows the theme.
 function readPalette(el: HTMLElement): CityPalette {
@@ -52,7 +54,7 @@ const chip =
 // frame shows a status line until the city is up, or instead of it when the data or WebGL is missing. Under the
 // frame: the colouring, a reset, and landmarks to fly to. Hover (or tap) shows a building; with the frame
 // focused, Enter describes the one in the middle, for keyboard and screen-reader users.
-export function CityViewer({ data, zh, places, labels }: Props) {
+export function CityViewer({ data, zh, places, preview, labels }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sceneRef = useRef<CityScene | null>(null);
@@ -143,8 +145,19 @@ export function CityViewer({ data, zh, places, labels }: Props) {
         className="relative aspect-viewer-tall w-full overflow-hidden border border-line bg-surface md:aspect-viewer"
       >
         <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 size-full touch-none" />
+        {/* Without WebGL or the data, a still of the opening view stands in, with the reason under it. */}
+        {(status === "noWebgl" || status === "failed") && (
+          <Image src={preview.src} alt={preview.alt} fill sizes="(min-width: 1320px) 1176px, 100vw" className="object-cover" />
+        )}
         {message && (
-          <p role="status" className="absolute inset-0 grid place-items-center p-6 text-center font-mono text-sm text-muted">
+          <p
+            role="status"
+            className={
+              status === "loading"
+                ? "absolute inset-0 grid place-items-center p-6 text-center font-mono text-sm text-muted"
+                : "absolute inset-x-3 bottom-8 rounded-md bg-bg/85 px-4 py-3 text-center font-mono text-sm text-fg backdrop-blur-sm"
+            }
+          >
             {message}
           </p>
         )}

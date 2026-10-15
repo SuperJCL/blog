@@ -29,6 +29,7 @@ const zh: Dictionary = {
     skillsTitle: "我主要做三类事情",
     featured: "精选作品",
     viewCase: "查看案例",
+    tryDemo: "试试在线 3D 地图",
     postsTitle: "最新文章",
     contactKicker: "关于 · 联系",
     contactTitle: "欢迎联系我",
@@ -41,6 +42,7 @@ const zh: Dictionary = {
     intro: "三个精选案例，每个都按问题、我的角色、做法和结果来写；其他做过的项目各用一句话概括。",
     casesTitle: "精选案例",
     otherTitle: "其他项目",
+    labTitle: "在线 demo",
     confidential: "本项目不展示截图和真实数据",
     role: "角色",
     stack: "技术栈",
@@ -113,6 +115,9 @@ const zh: Dictionary = {
     floors: "{n} 层",
     heightNote: ["", "按层数估算", "按用途估算"],
     nothingThere: "画面正中没有建筑。",
+    open: "打开 3D 地图",
+    previewAlt: "3D 地图的初始视角：从艾略特湾上空看西雅图市中心，高楼以强调色凸显，左侧是太空针塔",
+    shareMeta: "{buildings} 个楼体 · Three.js · OpenStreetMap",
   },
 };
 

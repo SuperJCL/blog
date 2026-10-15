@@ -14,6 +14,9 @@ export type Landmark = { id: string; name: Localized; lat: number; lon: number }
 type LabDemo = {
   slug: string;
   data: string;
+  preview: { src: string; width: number; height: number }; // the opening view, for the projects page and as a fallback
+  relatedProject: string; // the case study whose homepage screen links here
+  stack: string[];
   title: Localized;
   description: Localized;
   lede: Localized;
@@ -24,6 +27,10 @@ type LabDemo = {
 export const seattleDemo: LabDemo = {
   slug: "seattle",
   data: "/lab/seattle", // city.bin and city.json, built by scripts/seattle-data.mjs
+  // A capture of the scene (dark theme); assets/share-seattle.jpg is the same view for share images.
+  preview: { src: "/lab/seattle/preview.webp", width: 1440, height: 806 },
+  relatedProject: "cloud-3d-map",
+  stack: ["Three.js", "WebGL", "OpenStreetMap"],
   title: { en: "Seattle in 3D", zh: "西雅图 3D 城市" },
   description: {
     en: "Central Seattle's buildings from OpenStreetMap, extruded to their heights and drawn in the browser with Three.js.",

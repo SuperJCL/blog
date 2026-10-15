@@ -28,6 +28,7 @@ const en = {
     skillsTitle: "Three kinds of work",
     featured: "Selected work",
     viewCase: "Read the case study",
+    tryDemo: "Try the live 3D map",
     postsTitle: "Latest writing",
     contactKicker: "About · Contact",
     contactTitle: "Get in touch",
@@ -42,6 +43,7 @@ const en = {
       "Three case studies, each told as the problem, my role, the approach and the result, followed by the rest of my work in a line each.",
     casesTitle: "Case studies",
     otherTitle: "Other work",
+    labTitle: "Live demo",
     confidential: "Screenshots and real data are not shown for this project",
     role: "Role",
     stack: "Stack",
@@ -116,6 +118,9 @@ const en = {
     // By where a height comes from (city.json heightSource): tagged, from storeys, typical for the type.
     heightNote: ["", "estimated from floors", "typical for its type"],
     nothingThere: "No building in the middle of the view.",
+    open: "Open the 3D map",
+    previewAlt: "The 3D map's opening view: central Seattle from over Elliott Bay, the towers rising in the accent, the Space Needle on the left",
+    shareMeta: "{buildings} buildings · Three.js · OpenStreetMap",
   },
 };
 

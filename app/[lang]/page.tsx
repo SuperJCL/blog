@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ContactScreen, HeroScreen, PostsScreen, SkillsScreen, WorkScreen } from "@/components/home/screens";
 import { SlidePager } from "@/components/home/slide-pager";
 import { JsonLd } from "@/components/json-ld";
+import { seattleDemo } from "@/data/lab";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { getPostList } from "@/lib/posts";
 import { getProjects } from "@/lib/projects";
@@ -35,7 +36,15 @@ export default async function Home() {
         <HeroScreen dict={dict} locale={locale} />
         <SkillsScreen dict={dict} locale={locale} />
         {works.map((project, i) => (
-          <WorkScreen key={project.slug} dict={dict} locale={locale} project={project} index={i} total={works.length} />
+          <WorkScreen
+            key={project.slug}
+            dict={dict}
+            locale={locale}
+            project={project}
+            index={i}
+            total={works.length}
+            demo={project.slug === seattleDemo.relatedProject ? { href: `/${locale}/lab/${seattleDemo.slug}`, label: dict.home.tryDemo } : undefined}
+          />
         ))}
         <PostsScreen dict={dict} locale={locale} posts={posts} />
         <ContactScreen dict={dict} locale={locale} />

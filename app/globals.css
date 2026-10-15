@@ -85,6 +85,10 @@
   --spacing-slide-bottom: clamp(3rem, 10vh, 6.5rem);
   --spacing-section: clamp(2.2rem, 6vh, 3.8rem); /* vertical padding of case-study sections */
   --spacing-sticky: calc(var(--spacing-nav) + 1.5rem); /* where sticky labels stop, below the header */
+  /* A homepage work screen's framed cover (w-work-cover): half the width, but no taller than the screen leaves
+     above the project text, so short laptop screens don't put the text over it. The text needs about 20rem,
+     more below 1280px wide where its column is narrower and wraps more. */
+  --spacing-work-cover: max(18rem, min(52vw, 820px, calc((100dvh - var(--spacing-slide-top) - var(--spacing-slide-bottom) - 20rem - max(0px, (1280px - 100vw) * 0.3)) * 16 / 9)));
   --container-page: 1320px; /* max-w-page */
   --container-measure: 38em; /* max-w-measure: about 38 Chinese characters per line at the element's own size */
   --aspect-viewer: 16 / 9; /* the 3D demo's frame (aspect-viewer); taller on phones */

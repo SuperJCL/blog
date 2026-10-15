@@ -51,6 +51,7 @@ export default async function SeattleDemoPage() {
         data={seattleDemo.data}
         zh={locale === "zh"}
         places={seattleDemo.landmarks.map((l) => ({ id: l.id, name: l.name[locale], lat: l.lat, lon: l.lon }))}
+        preview={{ ...seattleDemo.preview, alt: t.previewAlt }}
         labels={{ ...t, viewer: fill(t.viewerLabel) }}
       />
 

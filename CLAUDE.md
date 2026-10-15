@@ -15,6 +15,7 @@ Chenglin Jiang 的个人主页 + 技术博客。
 - MDX 构建：remark-gfm（表格等 Markdown 扩展语法），shiki（构建时代码高亮，配色在 `lib/code-theme.ts`，取自设计变量）；改了 MDX 插件或配色后要删掉 `.content-collections/cache`
 - SEO：站点地址只在 `lib/site.ts` 写一次；每个页面的 metadata 都用其中的 `pageMeta`（canonical、hreflang 含 x-default、分享卡片）；新页面要加进 `app/sitemap.ts`。分享图由各路由的 `opengraph-image.tsx` 调 `lib/og.tsx` 生成，首页和关于页带人像，人像源是 `assets/share-portrait.jpg`（从 `public/portrait.webp` 导出，人像换了要重新导出）
 - RSS：`app/[lang]/feed.xml`，每种语言一份，条目和该语言的博客列表一致（没有译文的文章两边都有），只含摘要
+- 3D：Three.js，只在实验室页面按需加载。西雅图数据由 `scripts/seattle-data.mjs` 从 OpenStreetMap 生成到 `public/lab/seattle/`（`--refresh` 重新下载）；数据按 ODbL 声明署名，页面上保留 "© OpenStreetMap contributors"。场景换了视角或配色，要重新截 `preview.webp` 和 `assets/share-seattle.jpg`
 
 # 双语
 
@@ -30,6 +31,7 @@ Chenglin Jiang 的个人主页 + 技术博客。
 - 作品：项目列表和案例详情页
 - 博客：文章列表和文章页
 - 关于 / 联系
+- 实验室：在线 demo，`/[lang]/lab/<slug>`（目前是西雅图 3D 城市地图），从作品页和首页相关的作品屏进入，导航栏不加
 
 # 架构原则
 
@@ -47,6 +49,7 @@ Chenglin Jiang 的个人主页 + 技术博客。
 - 颜色：亮色、暗色各一套，默认跟随系统；顶栏按钮切换后记在 localStorage，由 `<html data-theme>` 生效（`lib/theme.ts`，head 里的脚本在首次绘制前设好，不闪屏）。按当前主题切换样式用 `theme-dark:` 变体；画布要在 `data-theme` 变化时重画；CSS 变量够不着的地方（分享图、theme-color）用 `lib/palette.ts` 从 `globals.css` 读色值
 - `.stage` 区块在两种主题下都是暗色，用于首页首屏和代码块
 - 荧光绿：`accent` 只作填充，上面的文字用 `accent-ink`；作文字、细线、焦点框时用 `accent-text`（亮色下是深绿）
+- 数据可视化的分类色：`accent-text`、`data-blue`、`data-amber` 加一个灰色，亮暗两套都已定义
 - 字体：标题 Anton，英文正文 Instrument Sans，标签和代码 IBM Plex Mono，中文 Noto Sans SC（标题 900）；英文页上零星的中文（语言切换按钮的"中文"）用系统中文字体 `font-zh-system`，不为几个字加载 Noto
 - 中文不加 `uppercase`，英文名和单位保持原样（Next.js、30 s）；英文标题和等宽标签可以大写
 - 长文正文：字号 `text-read`（17px），行宽 `max-w-measure`（38em，约 38 个汉字），行高英文 1.75、中文 1.9

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LoopVideo } from "@/components/loop-video";
 import { Page } from "@/components/page";
 import { SceneCanvas } from "@/components/scene-canvas";
+import { seattleDemo } from "@/data/lab";
 import { otherProjects, type ProjectMedia } from "@/data/other-projects";
 import type { Locale } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
@@ -104,6 +105,38 @@ export default async function ProjectsPage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* The live demo, in the same row layout as a case study. */}
+      <section aria-labelledby="lab-title" className="pt-20">
+        <h2 id="lab-title" className="pb-4 type-kicker text-muted">
+          {t.labTitle}
+        </h2>
+        <div className="border-y border-line">
+          <Link
+            href={`/${locale}/lab/${seattleDemo.slug}`}
+            className="group grid gap-6 py-10 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:items-center md:gap-12"
+          >
+            <div className="relative aspect-video overflow-hidden border border-line bg-surface">
+              <Image
+                src={seattleDemo.preview.src}
+                alt=""
+                fill
+                sizes="(min-width: 1320px) 490px, (min-width: 768px) 40vw, 100vw"
+                className="object-cover transition-transform duration-700 ease-reveal group-hover:scale-[1.02]"
+              />
+            </div>
+            <div className="flex min-w-0 flex-col gap-4">
+              <p className="type-kicker text-accent-text">{dict.lab.kicker}</p>
+              <h3 className="type-display text-h2 transition-colors group-hover:text-accent-text">{seattleDemo.title[locale]}</h3>
+              <p className="max-w-measure text-pretty text-muted">{seattleDemo.description[locale]}</p>
+              <p className="type-label text-muted">{seattleDemo.stack.join(" · ")}</p>
+              <span className="self-start border-b border-current pb-px font-semibold text-accent-text">
+                {dict.lab.open} <span aria-hidden="true">→</span>
+              </span>
+            </div>
+          </Link>
+        </div>
       </section>
 
       <section aria-labelledby="other-title" className="pt-20">

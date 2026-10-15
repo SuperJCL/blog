@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { seattleDemo } from "@/data/lab";
 import { locales, type Locale } from "@/i18n/config";
 import { getPostSlugs, getPostVersions } from "@/lib/posts";
 import { getProjectSlugs } from "@/lib/projects";
@@ -13,7 +14,7 @@ function entries(path: string, languages: readonly Locale[], lastModified?: stri
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
-    ...["", "/projects", "/blog", "/about"].flatMap((path) => entries(path, locales)),
+    ...["", "/projects", "/blog", "/about", `/lab/${seattleDemo.slug}`].flatMap((path) => entries(path, locales)),
     ...getProjectSlugs().flatMap((slug) => entries(`/projects/${slug}`, locales)),
     ...getPostSlugs().flatMap((slug) => {
       const versions = getPostVersions(slug);
