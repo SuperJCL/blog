@@ -62,6 +62,10 @@ export const seattleDemo: LabDemo = {
           en: "Heights are OpenStreetMap's own where tagged ({tagged} blocks), otherwise worked out from the number of storeys ({storeys}), or a typical height for the building type ({typed}, mostly low houses).",
           zh: "高度优先用 OpenStreetMap 标注的数值（{tagged} 个楼体）；没有的按层数推算（{storeys} 个）；层数也没有的，按建筑用途取典型高度（{typed} 个，大多是低矮住宅）。",
         },
+        {
+          en: "Northeastern University's Seattle campus, the Terry Thomas building at 225 Terry Ave N, can be taken apart floor by floor. The floors are worked out from its OpenStreetMap outline, courtyard included, and its four storeys. OpenStreetMap has no interior plans, so every floor is the same plate, and each storey is a quarter of the height.",
+          zh: "东北大学西雅图校区所在的 Terry Thomas 大楼（225 Terry Ave N）可以按楼层拆开看。楼层是根据 OpenStreetMap 的建筑轮廓（含中庭）和 4 层的层数推出来的。OpenStreetMap 没有室内布局数据，所以每层都是同一块楼板，层高取总高的四分之一。",
+        },
       ],
     },
     {

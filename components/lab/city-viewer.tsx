@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { loadCity } from "@/lib/lab/city-data";
-import type { BuildingInfo, CityPalette, CityScene, ColourMode, InfoEvent, Legend } from "@/lib/lab/city-scene";
+import type { BuildingInfo, CityPalette, CityScene, ColourMode, FloorTags, InfoEvent, Legend } from "@/lib/lab/city-scene";
 
 type Labels = {
   viewer: string;
@@ -20,12 +20,17 @@ type Labels = {
   categories: string[];
   flyTo: string;
   orbit: string;
+  explode: string;
   reset: string;
   arrived: string;
   unnamed: string;
   metres: string;
   floors: string;
   heightNote: string[];
+  floorTag: string;
+  floorOf: string;
+  storey: string;
+  floorArea: string;
   nothingThere: string;
 };
 type Place = { id: string; name: string; lat: number; lon: number };
@@ -55,8 +60,9 @@ const chip =
 
 // The 3D map of central Seattle. Three.js and the scene load with the data, after the page has painted; the
 // frame shows a status line until the city is up, or instead of it when the data or WebGL is missing. Under the
-// frame: the colouring, landmarks to fly to, a turn around the view (not offered with reduced motion) and a
-// reset. Hover (or tap) shows a building; with the frame focused, Enter describes the one in the middle, for
+// frame: the colouring, landmarks to fly to, a turn around the view (not offered with reduced motion), the
+// campus building taken apart floor by floor (when the data has it) and a reset. Hover (or tap) shows a
+// building, or a floor while it's apart; with the frame focused, Enter describes the one in the middle, for
 // keyboard and screen-reader users.
 export function CityViewer({ data, zh, places, preview, labels }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
@@ -69,6 +75,9 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
   const [said, setSaid] = useState("");
   const [place, setPlace] = useState<string | null>(null);
   const [orbiting, setOrbiting] = useState(false);
+  const [explodable, setExplodable] = useState(false);
+  const [apart, setApart] = useState(false);
+  const [floorTags, setFloorTags] = useState<FloorTags>(null);
 
   useEffect(() => {
     const frame = frameRef.current, canvas = canvasRef.current;
@@ -88,8 +97,16 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
       .then(([city, { createCityScene }]) => {
         if (cancelled) return;
         try {
-          sceneRef.current = createCityScene(canvas, frame, city, { palette: readPalette(frame), reducedMotion: reduce, onInfo: setHover, onOrbit: setOrbiting });
+          sceneRef.current = createCityScene(canvas, frame, city, {
+            palette: readPalette(frame),
+            reducedMotion: reduce,
+            onInfo: setHover,
+            onOrbit: setOrbiting,
+            onExplode: setApart,
+            onFloors: setFloorTags,
+          });
           setLegend(sceneRef.current.legend());
+          setExplodable(!!city.meta.featured?.length);
           setStatus("ready");
         } catch {
           setStatus("noWebgl"); // WebGLRenderer throws when there's no context
@@ -106,9 +123,23 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
     };
   }, [data]);
 
-  // A landmark's own name leads, with the building's map name under it when that differs.
+  // A landmark's own name leads, with the building's map name under it when that differs. A floor leads with
+  // its tag (3F), the building under it.
   const describe = (info: BuildingInfo) => {
     const mapName = info.name ? (zh ? (info.name.zh ?? info.name.en) : info.name.en) : null;
+    const fill = (text: string, n: number | string) => text.replace("{n}", String(n));
+    if (info.floor) {
+      const { number, of, storey, area } = info.floor;
+      return {
+        name: fill(labels.floorTag, number),
+        also: mapName,
+        facts: [
+          fill(labels.floorOf, number).replace("{total}", String(of)),
+          fill(labels.storey, storey.toFixed(1)),
+          fill(labels.floorArea, (Math.round(area / 10) * 10).toLocaleString(zh ? "zh-CN" : "en-US")),
+        ],
+      };
+    }
     const name = info.label ?? mapName ?? labels.unnamed;
     const note = labels.heightNote[info.source];
     return {
@@ -181,6 +212,16 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
             <span className="hidden pointer-coarse:inline">{labels.hintTouch}</span>
           </p>
         )}
+        {floorTags?.map((tag, i) => (
+          <span
+            key={i}
+            aria-hidden="true"
+            className="pointer-events-none absolute translate-x-2.5 -translate-y-1/2 rounded-sm bg-bg/80 px-1.5 py-0.5 font-mono text-label text-accent-text backdrop-blur-sm"
+            style={{ left: tag.x, top: tag.y }}
+          >
+            {labels.floorTag.replace("{n}", String(i + 1))}
+          </span>
+        ))}
         {card && hover && (
           <div
             aria-hidden="true"
@@ -236,8 +277,9 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
               {labels.byUse}
             </button>
           </div>
-          {/* Flights are actions, not toggles: the last place visited is only marked for the eye. The turn is a
-              toggle, pressed while it runs; it's a long camera move, so it isn't offered with reduced motion. */}
+          {/* Flights are actions, not toggles: the last place visited is only marked for the eye. The turn and the
+              exploded view are toggles, pressed while on. The turn is a long camera move, so it isn't offered with
+              reduced motion; the floors then part and close without moving. */}
           <div role="group" aria-label={labels.flyTo} className="flex flex-wrap items-center gap-2 md:justify-end">
             <span className="type-label text-muted">{labels.flyTo}</span>
             {places.map((p) => (
@@ -248,6 +290,19 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
             <button type="button" aria-pressed={orbiting} onClick={() => sceneRef.current?.orbit(!orbiting)} className={`${chip} motion-reduce:hidden`}>
               {labels.orbit}
             </button>
+            {explodable && (
+              <button
+                type="button"
+                aria-pressed={apart}
+                onClick={() => {
+                  if (!apart) setPlace(null);
+                  sceneRef.current?.explode(!apart);
+                }}
+                className={chip}
+              >
+                {labels.explode}
+              </button>
+            )}
             <button type="button" onClick={() => { setPlace(null); sceneRef.current?.resetView(); }} className={chip}>
               {labels.reset}
             </button>

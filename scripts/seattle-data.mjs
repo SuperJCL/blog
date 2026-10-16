@@ -5,7 +5,7 @@
 //   node scripts/seattle-data.mjs --refresh  downloads a fresh extract from the Overpass API
 //
 // Output, in public/lab/seattle/: city.bin (quantized geometry and attributes), city.json (layout of city.bin,
-// names, bounds) and ATTRIBUTION.txt. The data is © OpenStreetMap contributors under the ODbL; the output is a
+// names, bounds, the buildings shown floor by floor) and ATTRIBUTION.txt. The data is © OpenStreetMap contributors under the ODbL; the output is a
 // derived database under the same licence. No dependencies.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -21,6 +21,9 @@ const BBOX = { south: 47.596, west: -122.362, north: 47.632, east: -122.326 };
 const ORIGIN = { lat: (BBOX.south + BBOX.north) / 2, lon: (BBOX.west + BBOX.east) / 2 };
 const QUANTUM = 0.25; // metres per coordinate step (Int16 covers ±8 km)
 const LEVEL_HEIGHT = 3.3; // metres per storey when only building:levels is known
+// Buildings the page can take apart floor by floor, by OSM element. Their courtyards (a multipolygon's inner rings)
+// go into city.json, as the merged city mesh has none. The Terry Thomas, 225 Terry Ave N: Northeastern's Seattle campus.
+const FEATURED = [{ id: "terry-thomas", osm: "relation/3108546" }];
 
 // ---------- download ----------
 
@@ -227,7 +230,7 @@ for (const el of els) {
   for (const ring of outerRings(el)) {
     const clean = cleanRing(ring, 0.4);
     if (!clean || Math.abs(area(clean)) < 8) continue;
-    const item = { tags: t, ring: clean, c: centroid(clean) };
+    const item = { tags: t, ring: clean, c: centroid(clean), osm: `${el.type}/${el.id}` };
     (isPart ? parts : outlines).push(item);
   }
 }
@@ -247,7 +250,7 @@ const add = (item, owner) => {
   const tags = item.tags, ownerTags = owner?.tags ?? tags;
   const type = tags.building && tags.building !== "yes" ? tags.building : ownerTags.building;
   const [height, min, source] = heightOf(tags, type);
-  buildings.push({ ring: item.ring, height, min, source, type, cat: CATEGORY_OF[type] ?? 3, name: nameOf(tags.name ? tags : ownerTags), owner, levels: parseFloat(tags["building:levels"]) || 0 });
+  buildings.push({ ring: item.ring, osm: item.osm, height, min, source, type, cat: CATEGORY_OF[type] ?? 3, name: nameOf(tags.name ? tags : ownerTags), owner, levels: parseFloat(tags["building:levels"]) || 0 });
 };
 const claimed = new Set();
 for (const o of outlines) {
@@ -361,6 +364,19 @@ function section(name, typed) {
 }
 const coords = (rings) => Int16Array.from(rings.flatMap((r) => r.flatMap((p) => [q(p.x), q(p.y)])));
 
+// Each featured building is one block of `buildings` (its outline, height and storeys are that block's); its
+// courtyards come from the relation's inner members. Rings as [x, y, x, y, …] in `quantum` steps.
+const featured = FEATURED.map(({ id, osm }) => {
+  const blocks = buildings.flatMap((b, k) => (b.osm === osm ? [k] : []));
+  if (blocks.length !== 1) throw new Error(`featured ${id}: expected one block for ${osm}, found ${blocks.length}`);
+  const el = els.find((e) => `${e.type}/${e.id}` === osm);
+  const inner = assembleRings((el.members ?? []).filter((m) => m.type === "way" && m.role === "inner" && m.geometry).map((m) => m.geometry))
+    .map((r) => cleanRing(r.map(project), 0.4))
+    .filter(Boolean);
+  const flat = (ring) => ring.flatMap((p) => [q(p.x), q(p.y)]);
+  return { id, block: blocks[0], outer: flat(buildings[blocks[0]].ring), inner: inner.map(flat) };
+});
+
 section("buildingVertexCount", Uint16Array.from(buildings.map((b) => b.ring.length)));
 section("buildingHeight", Uint16Array.from(buildings.map((b) => dm(b.height))));
 section("buildingMinHeight", Uint16Array.from(buildings.map((b) => dm(b.min))));
@@ -400,6 +416,7 @@ writeFileSync(join(outDir, "city.json"), JSON.stringify({
   tallest: Math.round(Math.max(...buildings.map((b) => b.height))),
   sections,
   names,
+  featured,
 }));
 writeFileSync(join(outDir, "ATTRIBUTION.txt"), `Map data © OpenStreetMap contributors (https://www.openstreetmap.org/copyright).
 
@@ -412,3 +429,4 @@ const tagged = buildings.filter((b) => b.source === 0).length, storeys = buildin
 console.log(`buildings ${buildings.length} (heights: ${tagged} tagged, ${storeys} from storeys, ${buildings.length - tagged - storeys} by type), named ${names.length}`);
 console.log(`roads ${roads.length}, water polygons ${water.length}, parks ${parks.length}; tallest ${Math.max(...buildings.map((b) => b.height)).toFixed(0)} m`);
 console.log(`city.bin ${(bin.byteLength / 1024).toFixed(0)} KB, city.json ${(JSON.stringify(names).length / 1024).toFixed(0)} KB of names`);
+for (const f of featured) console.log(`featured ${f.id}: block ${f.block}, ${buildings[f.block].groupLevels} storeys, outline ${f.outer.length / 2} points, courtyards ${f.inner.map((r) => r.length / 2).join(", ") || "none"}`);

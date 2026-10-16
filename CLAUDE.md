@@ -15,7 +15,7 @@ Chenglin Jiang 的个人主页 + 技术博客。
 - MDX 构建：remark-gfm（表格等 Markdown 扩展语法），shiki（构建时代码高亮，配色在 `lib/code-theme.ts`，取自设计变量）；改了 MDX 插件或配色后要删掉 `.content-collections/cache`
 - SEO：站点地址只在 `lib/site.ts` 写一次；每个页面的 metadata 都用其中的 `pageMeta`（canonical、hreflang 含 x-default、分享卡片）；新页面要加进 `app/sitemap.ts`。分享图由各路由的 `opengraph-image.tsx` 调 `lib/og.tsx` 生成，首页和关于页带人像，人像源是 `assets/share-portrait.jpg`（从 `public/portrait.webp` 导出，人像换了要重新导出）
 - RSS：`app/[lang]/feed.xml`，每种语言一份，条目和该语言的博客列表一致（没有译文的文章两边都有），只含摘要
-- 3D：Three.js，只在实验室页面按需加载。西雅图数据由 `scripts/seattle-data.mjs` 从 OpenStreetMap 生成到 `public/lab/seattle/`（`--refresh` 重新下载）；数据按 ODbL 声明署名，页面上保留 "© OpenStreetMap contributors"。场景换了视角或配色，要重新截 `preview.webp` 和 `assets/share-seattle.jpg`
+- 3D：Three.js，只在实验室页面按需加载。西雅图数据由 `scripts/seattle-data.mjs` 从 OpenStreetMap 生成到 `public/lab/seattle/`（`--refresh` 重新下载）；数据按 ODbL 声明署名，页面上保留 "© OpenStreetMap contributors"。场景换了视角或配色，要重新截 `preview.webp` 和 `assets/share-seattle.jpg`。能按楼层拆开的建筑（目前是校区的 Terry Thomas）在脚本的 `FEATURED` 里指定，外轮廓和中庭写进 `city.json` 的 `featured`；楼层只由轮廓和层数推出，层高均分，页面上要写明 OSM 没有室内数据
 
 # 双语
 

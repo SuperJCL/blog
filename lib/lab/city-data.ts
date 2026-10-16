@@ -14,6 +14,9 @@ export type CityMeta = {
   counts: { buildings: number; roads: number; water: number; parks: number };
   sections: Record<string, { type: SectionType; offset: number; length: number }>;
   names: { en: string; zh?: string }[];
+  // Buildings that come apart floor by floor: the block that is each of them (its outline, height and storeys)
+  // and its courtyards, as rings of [x, y, x, y, …] in `quantum` steps.
+  featured?: { id: string; block: number; outer: number[]; inner: number[][] }[];
 };
 
 // A set of rings or lines: point i of item k is coords[2 * (start[k] + i)], coords[2 * (start[k] + i) + 1].

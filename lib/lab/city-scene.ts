@@ -29,13 +29,25 @@ import { toScene, type City, type CityMeta, type Shapes } from "./city-data";
 
 // The Seattle demo's Three.js scene: every building extruded into one merged mesh (one draw call), flat layers
 // for land, water, parks and roads, orbit controls, GPU picking for hover and tap, two colourings, flights to
-// landmarks and a turn around them, and rendering only while something moves.
+// landmarks and a turn around them, a building that comes apart floor by floor, and rendering only while
+// something moves.
 // Three.js space: x east, y up, z south, in metres from the data's origin.
 
 export type CityPalette = { bg: string; surface: string; line: string; muted: string; fg: string; mark: string; blue: string; amber: string };
 export type ColourMode = "height" | "use";
-// `label`: the landmark's own name, when the camera flew to it (the building's map name may differ).
-export type BuildingInfo = { name: CityMeta["names"][number] | null; label?: string; height: number; levels: number; source: number; category: number };
+// `label`: the landmark's own name, when the camera flew to it (the building's map name may differ). `floor`: one
+// storey of the featured building while it's apart; `storey` its height in metres, `area` its plate in m².
+export type BuildingInfo = {
+  name: CityMeta["names"][number] | null;
+  label?: string;
+  height: number;
+  levels: number;
+  source: number;
+  category: number;
+  floor?: { number: number; of: number; storey: number; area: number };
+};
+// Where each floor's tag goes while the featured building is apart, ground floor first, in canvas CSS px.
+export type FloorTags = { x: number; y: number }[] | null;
 // What's under the pointer (hover) or was tapped or asked about (pinned), at a point in the canvas, in CSS px;
 // `width` and `height` are the canvas's, for keeping a label beside the point inside it.
 export type InfoEvent = { info: BuildingInfo; x: number; y: number; width: number; height: number; pinned: boolean } | null;
@@ -46,11 +58,19 @@ export type CityScene = {
   legend(): Legend;
   flyTo(lat: number, lon: number, label: string): void;
   orbit(on: boolean): void;
+  explode(on: boolean): void;
   resetView(): void;
   describeCentre(): BuildingInfo | null;
   dispose(): void;
 };
-type Options = { palette: CityPalette; reducedMotion: boolean; onInfo(event: InfoEvent): void; onOrbit(on: boolean): void };
+type Options = {
+  palette: CityPalette;
+  reducedMotion: boolean;
+  onInfo(event: InfoEvent): void;
+  onOrbit(on: boolean): void;
+  onExplode(on: boolean): void;
+  onFloors(tags: FloorTags): void;
+};
 
 // The opening view. Wide frames look from over Elliott Bay (west-southwest), between the downtown towers and
 // Seattle Center: the skyline in front, the Space Needle behind on the left. Upright frames (phones) look north
@@ -62,6 +82,9 @@ const VIEWS = {
 const FLIGHT = { distance: 720, polar: 58, ms: 1600 }; // how a landmark is framed, and how long getting there takes
 const BREATH_MS = 2200; // one slow swell of an arrived-at landmark's highlight: far below the 3-per-second flash limit
 const ORBIT = { ms: 20000, ramp: 0.08 }; // one turn around what the camera looks at, easing in and out over the ramp
+// The featured building apart: each floor rises `gap` metres further than the one below, over `ms`, seen from a
+// close-up of the stack; the rest of the city fades to `ghost` opacity so it can't hide the lower floors.
+const EXPLODE = { gap: 14, ms: 1000, distance: 210, polar: 54, ghost: 0.3 };
 const ROAD_WIDTH = [14, 8]; // metres: major, minor
 const TAP_SLOP = 6; // px a tap may move and still count as a tap
 
@@ -115,8 +138,10 @@ function roadRibbons(s: Shapes & { cls: Uint8Array }, q: number, cls: number) {
 
 // Each block: a bottom ring and a top ring of vertices, walls between them, the roof triangulated from the top
 // ring. Shared vertices are fine with flat shading, which takes face normals from screen-space derivatives.
-// Every vertex also carries its block's number + 1 as an RGB colour, for picking.
-function buildingGeometry(b: City["buildings"], q: number) {
+// Every vertex also carries its block's number + 1 as an RGB colour, for picking. The `skip` block (drawn by
+// itself) keeps its vertices, so block numbers still find their own, but gets no faces or roof lines.
+const pickColour = (id: number) => [(id >> 16) & 255, (id >> 8) & 255, id & 255];
+function buildingGeometry(b: City["buildings"], q: number, skip: number) {
   let vertices = 0, triangles = 0, edges = 0;
   for (let k = 0; k < b.count.length; k++) {
     vertices += 2 * b.count[k];
@@ -137,8 +162,9 @@ function buildingGeometry(b: City["buildings"], q: number) {
       position.set([x, bottom, -north], 3 * (base + i));
       position.set([x, top, -north], 3 * (base + n + i));
     }
-    for (let i = 0; i < 2 * n; i++) pick.set([(id >> 16) & 255, (id >> 8) & 255, id & 255], 3 * (base + i));
+    for (let i = 0; i < 2 * n; i++) pick.set(pickColour(id), 3 * (base + i));
     v += 2 * n;
+    if (k === skip) continue;
     // Rings run counter-clockwise on the map, so (bottom i, bottom j, top j) faces outward.
     for (let i = 0; i < n; i++) {
       const j = (i + 1) % n;
@@ -164,8 +190,48 @@ function buildingGeometry(b: City["buildings"], q: number) {
   geometry.setAttribute("pickColor", new BufferAttribute(pick, 3, true));
   geometry.setIndex(new BufferAttribute(index.subarray(0, t), 1));
   const lines = new BufferGeometry();
-  lines.setAttribute("position", new BufferAttribute(roofLines, 3));
+  lines.setAttribute("position", new BufferAttribute(roofLines.subarray(0, e), 3));
   return { geometry, lines, firstVertex };
+}
+
+// One storey, from y0 to y1, of a building drawn by itself: walls round the outline (counter-clockwise) and its
+// courtyards (clockwise), so every wall faces out of the floor; a plate on top with the courtyards cut out, and
+// one underneath. Vertex colours here are only shades, `walls` at the foot and the head of this storey's walls,
+// so a whole stack darkens toward the ground like the other blocks; the colour itself is the material's. The
+// plate's outline is drawn as lines.
+function floorGeometry(rings: Vector2[][], y0: number, y1: number, walls: [number, number], pickId: number) {
+  const position: number[] = [], shade: number[] = [], index: number[] = [], edges: number[] = [];
+  const vertex = (p: Vector2, y: number, s: number) => {
+    position.push(p.x, y, -p.y);
+    shade.push(s, s, s);
+    return position.length / 3 - 1;
+  };
+  for (const ring of rings) {
+    const n = ring.length, foot = ring.map((p) => vertex(p, y0, walls[0])), head = ring.map((p) => vertex(p, y1, walls[1]));
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      index.push(foot[i], foot[j], head[j], foot[i], head[j], head[i]);
+      edges.push(ring[i].x, y1, -ring[i].y, ring[j].x, y1, -ring[j].y);
+    }
+  }
+  // A plate triangle faces up when it runs counter-clockwise on the map.
+  const [outer, ...holes] = rings, all = rings.flat(), triangles = ShapeUtils.triangulateShape(outer, holes);
+  const ccw = (a: Vector2, b: Vector2, c: Vector2) => (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) > 0;
+  for (const [y, s, up] of [[y1, 1, true], [y0, walls[0], false]] as const) {
+    const ids = all.map((p) => vertex(p, y, s));
+    for (const [a, b, c] of triangles) {
+      const flip = ccw(all[a], all[b], all[c]) !== up;
+      index.push(ids[a], ids[flip ? c : b], ids[flip ? b : c]);
+    }
+  }
+  const geometry = new BufferGeometry(), id = pickColour(pickId);
+  geometry.setAttribute("position", new BufferAttribute(new Float32Array(position), 3));
+  geometry.setAttribute("color", new BufferAttribute(new Float32Array(shade), 3));
+  geometry.setAttribute("pickColor", new BufferAttribute(Uint8Array.from({ length: position.length }, (_, i) => id[i % 3]), 3, true));
+  geometry.setIndex(index);
+  const lines = new BufferGeometry();
+  lines.setAttribute("position", new BufferAttribute(new Float32Array(edges), 3));
+  return { geometry, lines };
 }
 
 // Draws each block in its picking colour, unlit: one pixel of this tells which block is under a point.
@@ -203,17 +269,43 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     layer.renderOrder = i;
     scene.add(layer);
   });
-  const { geometry, lines, firstVertex } = buildingGeometry(b, q);
+  const featured = city.meta.featured?.[0];
+  const { geometry, lines, firstVertex } = buildingGeometry(b, q, featured?.block ?? -1);
   const buildings = new Mesh(geometry, new MeshLambertMaterial({ vertexColors: true, flatShading: true }));
   const roofs = new LineSegments(lines, new LineBasicMaterial({ transparent: true, opacity: 0.55 }));
   buildings.renderOrder = roofs.renderOrder = 10;
   scene.add(buildings, roofs);
 
-  const pickScene = new Scene();
+  const pickScene = new Scene(), floorPickScene = new Scene(), picker = pickMaterial();
   pickScene.background = new Color(0); // 0: no building
-  pickScene.add(new Mesh(geometry, pickMaterial()));
+  pickScene.add(new Mesh(geometry, picker));
   const pickTarget = new WebGLRenderTarget(1, 1);
   const pixel = new Uint8Array(4);
+
+  // The featured building, drawn floor by floor so it can come apart; its block stands for it everywhere else
+  // (landmarks, colour, hover while it's whole). Floors pick as numbers past the blocks. Storeys share the
+  // height evenly: OpenStreetMap has the outline, the courtyards and the number of storeys, nothing inside.
+  const blockCount = b.count.length, floorEdges = (roofs.material as LineBasicMaterial).clone(); // stays opaque while the city fades
+  const feature = featured && (() => {
+    const k = featured.block, levels = Math.max(1, b.levels[k]), storey = b.groupHeight[k] / 10 / levels;
+    const ring = (flat: number[]) => Array.from({ length: flat.length / 2 }, (_, i) => new Vector2(flat[2 * i] * q, flat[2 * i + 1] * q));
+    const outer = ring(featured.outer), holes = featured.inner.map(ring);
+    if (ShapeUtils.isClockWise(outer)) outer.reverse();
+    for (const hole of holes) if (!ShapeUtils.isClockWise(hole)) hole.reverse();
+    const floors = Array.from({ length: levels }, (_, f) => {
+      const g = floorGeometry([outer, ...holes], f * storey, (f + 1) * storey, [0.5 + (0.5 * f) / levels, 0.5 + (0.5 * (f + 1)) / levels], blockCount + 1 + f);
+      const mesh = new Mesh(g.geometry, new MeshLambertMaterial({ vertexColors: true, flatShading: true }));
+      const edges = new LineSegments(g.lines, floorEdges), pick = new Mesh(g.geometry, picker);
+      mesh.renderOrder = edges.renderOrder = 10;
+      edges.visible = f === levels - 1; // whole, only the roof's outline shows, as on every other block
+      scene.add(mesh, edges);
+      floorPickScene.add(pick);
+      return { mesh, edges, pick };
+    });
+    const area = holes.reduce((sum, hole) => sum + ShapeUtils.area(hole), ShapeUtils.area(outer)); // courtyards run clockwise: negative
+    const middle = outer.reduce((sum, p) => sum.add(p), new Vector2()).divideScalar(outer.length);
+    return { block: k, floors, storey, area, outer, centre: new Vector3(middle.x, 0, -middle.y), top: levels * storey + (levels - 1) * EXPLODE.gap };
+  })();
 
   // Blocks of one named building light up together on hover.
   const sameBuilding = new Map<number, number[]>();
@@ -240,8 +332,8 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
 
   // ---------- colour ----------
 
-  let mode: ColourMode = "height", highlighted: number[] = [];
-  let ramp: Color[] = [], kinds: Color[] = [], glow = new Color(), legendCache: Legend | null = null;
+  let mode: ColourMode = "height", highlighted: number[] = [], hoveredFloor = -1;
+  let ramp: Color[] = [], kinds: Color[] = [], glow = new Color(), accent = new Color(), legendCache: Legend | null = null;
   const blockColour = (k: number, out: Color) => {
     if (mode === "use") return out.copy(kinds[b.category[k]]);
     const t = heightT(b.height[k] / 10);
@@ -252,6 +344,21 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     const n = b.count[k], v = firstVertex[k];
     for (let i = 0; i < n; i++) colours.setXYZ(v + i, colour.r * 0.5, colour.g * 0.5, colour.b * 0.5); // shaded foot
     for (let i = 0; i < n; i++) colours.setXYZ(v + n + i, colour.r, colour.g, colour.b);
+    // The featured building's floors take its block's colour, turning to the accent as they come apart; a floor
+    // pointed at while it's apart glows.
+    if (k === feature?.block) {
+      const e = easeInOut(spread);
+      feature.floors.forEach((f, i) => {
+        const material = f.mesh.material as MeshLambertMaterial;
+        if (i === hoveredFloor) material.color.copy(glow);
+        else material.color.copy(colour).lerp(accent, e);
+      });
+    }
+  };
+  const repaintFeature = () => {
+    if (!feature) return;
+    paintBlock(feature.block, highlighted.includes(feature.block) ? glow : blockColour(feature.block, scratch));
+    requestRender();
   };
   // Sends colours to the GPU at the next render: everything, or only the given blocks' vertices (the breathing
   // highlight, per frame). A whole upload already waiting isn't narrowed by a later partial one.
@@ -271,7 +378,12 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     upload();
     requestRender();
   };
-  const highlight = (blocks: number[]) => {
+  // Lights up the given blocks, or one floor of the featured building.
+  const highlight = (blocks: number[], floor = -1) => {
+    if (floor !== hoveredFloor) {
+      hoveredFloor = floor;
+      repaintFeature();
+    }
     if (blocks.length === highlighted.length && blocks.every((k, i) => k === highlighted[i])) return;
     for (const k of highlighted) paintBlock(k, blockColour(k, scratch));
     const changed = [...highlighted, ...blocks];
@@ -291,10 +403,11 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     (parks.material as MeshBasicMaterial).color = mix(c.surface, c.mark, 0.1);
     (minor.material as MeshBasicMaterial).color = c.line;
     (major.material as MeshBasicMaterial).color = mix(c.line, c.muted, 0.45);
-    (roofs.material as LineBasicMaterial).color = mix(c.mark, c.fg, 0.35);
+    (roofs.material as LineBasicMaterial).color = floorEdges.color = mix(c.mark, c.fg, 0.35);
     ramp = [mix(c.surface, c.fg, 0.1), mix(c.surface, c.fg, 0.42), c.mark];
     kinds = [c.mark, c.blue, c.amber, mix(c.surface, c.fg, 0.3)]; // office & commercial, residential, civic, other
     glow = c.fg;
+    accent = c.mark;
     (ping.material as MeshBasicMaterial).color = c.mark;
     legendCache = {
       height: { colours: ramp.map((x) => `#${x.getHexString()}`), ticks: [10, 50, 150].map((metres) => ({ metres, at: heightT(metres) })) },
@@ -370,6 +483,38 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     focus.y = y;
     options.onInfo({ info: focus.info, x, y, width: w, height: h, pinned: true });
   };
+  // Once the featured building is fully apart, each floor's tag sits just right of it, level with the part of it
+  // that shows: from its lowest point on screen up to its top, or to where the floor above covers it, seen from
+  // above. Sent only when a tag moves by a whole pixel.
+  let floorTagsKey = "";
+  const pinFloorTags = () => {
+    if (!feature) return;
+    let tags: FloorTags = null;
+    if (apart && spread === 1) {
+      const w = canvas.clientWidth, h = canvas.clientHeight, last = feature.floors.length - 1, pitch = feature.storey + EXPLODE.gap;
+      // The outline's furthest right, lowest and highest points on screen, at a height.
+      const reach = (y: number) => {
+        let right = -Infinity, low = -Infinity, high = Infinity;
+        for (const p of feature.outer) {
+          anchorOnScreen.set(p.x, y, -p.y).project(camera);
+          const sy = ((1 - anchorOnScreen.y) / 2) * h;
+          right = Math.max(right, ((anchorOnScreen.x + 1) / 2) * w);
+          low = Math.max(low, sy);
+          high = Math.min(high, sy);
+        }
+        return { right, low, high };
+      };
+      tags = feature.floors.map((_, i) => {
+        const foot = reach(i * pitch), head = reach(i * pitch + feature.storey);
+        const top = Math.max(head.high, i < last ? reach((i + 1) * pitch).low : -Infinity);
+        return { x: Math.round(Math.max(foot.right, head.right)), y: Math.round((foot.low + top) / 2) };
+      });
+    }
+    const key = JSON.stringify(tags);
+    if (key === floorTagsKey) return;
+    floorTagsKey = key;
+    options.onFloors(tags);
+  };
 
   // A turn: the camera circles once around what it looks at, a landmark it has flown to or the middle of the
   // view, and the focus stays. A drag, zoom or flight stops it; one asked for during a flight starts on arrival.
@@ -386,13 +531,52 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     options.onOrbit(on);
   };
 
+  // The featured building apart or whole: `apart` is where it's heading, `spread` (0–1) how far it has got. It
+  // starts coming apart once a flight to it has landed; going back together doesn't wait for one.
+  let apart = false, spread = 0;
+  // While it's apart the city is drawn see-through, after the solid floors, without writing depth.
+  const blockMaterial = buildings.material as MeshLambertMaterial, roofMaterial = roofs.material as LineBasicMaterial;
+  const placeFloors = () => {
+    if (!feature) return;
+    const e = easeInOut(spread), last = feature.floors.length - 1;
+    feature.floors.forEach((f, i) => {
+      f.mesh.position.y = f.edges.position.y = f.pick.position.y = i * EXPLODE.gap * e;
+      f.edges.visible = i === last || e > 0;
+    });
+    const seeThrough = e > 0;
+    if (blockMaterial.transparent !== seeThrough) {
+      blockMaterial.transparent = seeThrough;
+      blockMaterial.depthWrite = !seeThrough;
+      blockMaterial.needsUpdate = true;
+    }
+    blockMaterial.opacity = 1 - (1 - EXPLODE.ghost) * e;
+    roofMaterial.opacity = 0.55 * blockMaterial.opacity;
+    repaintFeature();
+  };
+  const setApart = (on: boolean) => {
+    if (!feature || on === apart) return;
+    apart = on;
+    if (options.reducedMotion) {
+      spread = on ? 1 : 0;
+      placeFloors();
+    }
+    if (!on && hoveredFloor >= 0) {
+      highlight([]);
+      options.onInfo(null);
+    }
+    options.onExplode(on);
+    requestRender();
+  };
+
   // A flight: target and camera ease to a new view along an arc; any drag cancels it. `arrive` runs at the end.
   type Flight = { fromTarget: Vector3; toTarget: Vector3; fromPos: Vector3; toPos: Vector3; start: number; lift: number; arrive?: () => void };
   let flight: Flight | null = null;
+  const azimuthNow = () => MathUtils.radToDeg(new Spherical().setFromVector3(camera.position.clone().sub(controls.target)).theta);
   const flyToView = (target: Vector3, position: Vector3, arrive?: () => void) => {
     touched = true;
     controls.autoRotate = false;
     setOrbit(false);
+    setApart(false);
     clearFocus();
     options.onInfo(null);
     highlight([]);
@@ -448,6 +632,11 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       orbit.done = done;
       if (orbit.elapsed === ORBIT.ms) setOrbit(false);
     }
+    const goal = apart ? 1 : 0, spreading = spread !== goal;
+    if (spreading && (!apart || !flight)) {
+      spread = MathUtils.clamp(spread + (apart ? dt : -dt) / EXPLODE.ms, 0, 1);
+      placeFloors();
+    }
     const moved = controls.update() || flight !== null;
     const breathing = focus !== null && !options.reducedMotion;
     if (breathing) {
@@ -458,13 +647,14 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       ping.scale.setScalar(focus!.radius * (1 + 1.4 * phase));
       (ping.material as MeshBasicMaterial).opacity = 0.85 * (1 - phase);
     }
-    if (moved || dirty || breathing) {
+    if (moved || dirty || breathing || spreading) {
       renderer.render(scene, camera);
       dirty = false;
       wholePending = false;
     }
     pinFocusLabel();
-    if (!raf && visible && (moved || controls.autoRotate || breathing || orbit)) raf = requestAnimationFrame(frame);
+    pinFloorTags();
+    if (!raf && visible && (moved || controls.autoRotate || breathing || orbit || spreading)) raf = requestAnimationFrame(frame);
   };
   function requestRender() {
     dirty = true;
@@ -474,12 +664,20 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
 
   // ---------- picking ----------
 
-  // The block under a point of the canvas (CSS px), from a 1×1 render of the picking colours there.
+  // The block under a point of the canvas (CSS px), from a 1×1 render of the picking colours there. The featured
+  // building's floors go on top in a second pass: hidden behind nearer blocks while it's whole, but never by the
+  // see-through city while it's apart.
   const pick = (x: number, y: number) => {
     const ratio = renderer.getPixelRatio();
     camera.setViewOffset(canvas.width, canvas.height, Math.floor(x * ratio), Math.floor(y * ratio), 1, 1);
     renderer.setRenderTarget(pickTarget);
     renderer.render(pickScene, camera);
+    if (feature) {
+      renderer.autoClear = false;
+      if (apart) renderer.clearDepth();
+      renderer.render(floorPickScene, camera);
+      renderer.autoClear = true;
+    }
     renderer.setRenderTarget(null);
     camera.clearViewOffset();
     renderer.readRenderTargetPixels(pickTarget, 0, 0, 1, 1, pixel);
@@ -492,9 +690,10 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     source: b.heightSource[k],
     category: b.category[k],
   });
-  // A hover over empty ground or the focused building leaves a focus in place; anything else replaces it.
+  // A hover over empty ground or the focused building leaves a focus in place; anything else replaces it. The
+  // featured building shows as one while it's whole and floor by floor while it's apart.
   const show = (x: number, y: number, pinned: boolean) => {
-    const k = pick(x, y);
+    const hit = pick(x, y), floor = feature && hit >= blockCount ? hit - blockCount : -1, k = floor >= 0 ? feature!.block : hit;
     if (focus && !pinned && (k < 0 || highlighted.includes(k))) return focus.info;
     clearFocus();
     if (k < 0) {
@@ -502,8 +701,13 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       options.onInfo(null);
       return null;
     }
-    highlight(blocksOf(k));
-    const info = infoOf(k);
+    let info = infoOf(k);
+    if (feature && floor >= 0 && apart) {
+      highlight([], floor);
+      info = { ...info, floor: { number: floor + 1, of: feature.floors.length, storey: feature.storey, area: feature.area } };
+    } else {
+      highlight(blocksOf(k));
+    }
     options.onInfo({ info, x, y, width: canvas.clientWidth, height: canvas.clientHeight, pinned });
     return info;
   };
@@ -571,10 +775,20 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
     flyTo(lat, lon, label) {
       const { x, z } = toScene(city.meta, lat, lon), k = blockAt(x, -z), roof = k >= 0 ? roofOf(blocksOf(k)) : 0;
       const target = new Vector3(x, roof * 0.45, z);
-      const azimuth = MathUtils.radToDeg(new Spherical().setFromVector3(camera.position.clone().sub(controls.target)).theta);
-      flyToView(target, viewPosition(target, Math.max(FLIGHT.distance, roof * 2.8), FLIGHT.polar, azimuth), () => startFocus(x, z, label));
+      flyToView(target, viewPosition(target, Math.max(FLIGHT.distance, roof * 2.8), FLIGHT.polar, azimuthNow()), () => startFocus(x, z, label));
     },
     orbit: setOrbit,
+    // Apart, the stack is seen close up from the side the camera is on; a flight there comes first, unless the
+    // camera is already in place.
+    explode(on) {
+      if (!feature || on === apart) return;
+      if (on) {
+        const target = feature.centre.clone().setY(feature.top / 2);
+        const position = viewPosition(target, EXPLODE.distance, EXPLODE.polar, azimuthNow());
+        if (camera.position.distanceTo(position) > 1 || controls.target.distanceTo(target) > 1) flyToView(target, position);
+      }
+      setApart(on);
+    },
     resetView() {
       const view = openingView();
       flyToView(view.target.clone(), viewPosition(view.target, view.distance, view.polar, view.azimuth));
@@ -592,11 +806,12 @@ export function createCityScene(canvas: HTMLCanvasElement, keyTarget: HTMLElemen
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointerup", onUp);
       controls.dispose();
-      for (const object of [ground, water, parks, minor, major, buildings, roofs, ping]) {
+      for (const object of [ground, water, parks, minor, major, buildings, roofs, ping, ...(feature?.floors.map((f) => f.mesh) ?? [])]) {
         object.geometry.dispose();
         (object.material as MeshBasicMaterial).dispose();
       }
-      (pickScene.children[0] as Mesh<BufferGeometry, ShaderMaterial>).material.dispose();
+      for (const f of feature?.floors ?? []) f.edges.geometry.dispose();
+      picker.dispose();
       pickTarget.dispose();
       renderer.dispose();
     },

@@ -111,6 +111,7 @@ const en = {
     categories: ["Office & commercial", "Residential", "Civic & public", "Other"],
     flyTo: "Fly to",
     orbit: "Orbit",
+    explode: "Campus exploded view",
     reset: "Reset view",
     arrived: "Now at {place}.",
     unnamed: "Building",
@@ -118,6 +119,11 @@ const en = {
     floors: "{n} floors",
     // By where a height comes from (city.json heightSource): tagged, from storeys, typical for the type.
     heightNote: ["", "estimated from floors", "typical for its type"],
+    // A floor of the campus building while it's apart.
+    floorTag: "{n}F",
+    floorOf: "Floor {n} of {total}",
+    storey: "≈ {n} m high",
+    floorArea: "≈ {n} m² floor area",
     nothingThere: "No building in the middle of the view.",
     open: "Open the 3D map",
     previewAlt: "The 3D map's opening view: central Seattle from over Elliott Bay, the towers rising in the accent, the Space Needle on the left",
