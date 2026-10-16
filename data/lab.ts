@@ -84,8 +84,12 @@ export const seattleDemo: LabDemo = {
           zh: "拾取：每个顶点还带着所属楼体的编号，编码成颜色。要知道指针下是哪栋楼，就在那个位置把场景再画一遍，画进 1 × 1 像素的离屏目标，读回颜色即可：无论有多少栋楼，都只读一个像素。",
         },
         {
-          en: "Performance: it draws only while the camera moves, pauses off screen and caps the pixel ratio. Three.js loads on this page only.",
-          zh: "性能：只在镜头移动时绘制，离开视野就暂停，像素比封顶。Three.js 只在这个页面加载。",
+          en: "Exploded view: the campus building stays out of the merged mesh and is drawn one mesh per storey, the courtyard cut out of every floor plate. While it's apart the rest of the city turns see-through, and picking draws the floors again after clearing depth, so a building in front can't take the pointer from them.",
+          zh: "爆炸图：校区大楼不并进合并网格，而是每层单独一个网格，每块楼板都挖出中庭。拆开时，城市其余部分变成半透明；拾取时先清空深度，再单独画一遍楼层，这样挡在前面的楼就抢不走指针。",
+        },
+        {
+          en: "Performance: it draws only while something moves (the camera, a landmark's highlight, the floors), pauses off screen and caps the pixel ratio. Three.js loads on this page only.",
+          zh: "性能：只在画面有变化时绘制（镜头移动、地标高亮呼吸、楼层拆合），离开视野就暂停，像素比封顶。Three.js 只在这个页面加载。",
         },
       ],
     },
