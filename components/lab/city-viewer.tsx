@@ -19,8 +19,10 @@ type Labels = {
   byUse: string;
   categories: string[];
   flyTo: string;
+  view: string;
   orbit: string;
   explode: string;
+  apartSaid: string;
   reset: string;
   arrived: string;
   unnamed: string;
@@ -267,45 +269,51 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
       </div>
 
       {status === "ready" && (
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-10">
-          <div role="group" aria-label={labels.colourBy} className="flex shrink-0 flex-wrap items-center gap-2">
-            <span className="type-label text-muted">{labels.colourBy}</span>
-            <button type="button" aria-pressed={mode === "height"} onClick={() => choose("height")} className={chip}>
-              {labels.byHeight}
-            </button>
-            <button type="button" aria-pressed={mode === "use"} onClick={() => choose("use")} className={chip}>
-              {labels.byUse}
-            </button>
-          </div>
-          {/* Flights are actions, not toggles: the last place visited is only marked for the eye. The turn and the
-              exploded view are toggles, pressed while on. The turn is a long camera move, so it isn't offered with
-              reduced motion; the floors then part and close without moving. */}
-          <div role="group" aria-label={labels.flyTo} className="flex flex-wrap items-center gap-2 md:justify-end">
+        <div className="flex flex-col gap-3">
+          {/* Flights are actions, not toggles: the last place visited is only marked for the eye. */}
+          <div role="group" aria-label={labels.flyTo} className="flex flex-wrap items-center gap-2">
             <span className="type-label text-muted">{labels.flyTo}</span>
             {places.map((p) => (
               <button key={p.id} type="button" data-on={place === p.id || undefined} onClick={() => fly(p)} className={chip}>
                 {p.name}
               </button>
             ))}
-            <button type="button" aria-pressed={orbiting} onClick={() => sceneRef.current?.orbit(!orbiting)} className={`${chip} motion-reduce:hidden`}>
-              {labels.orbit}
-            </button>
-            {explodable && (
-              <button
-                type="button"
-                aria-pressed={apart}
-                onClick={() => {
-                  if (!apart) setPlace(null);
-                  sceneRef.current?.explode(!apart);
-                }}
-                className={chip}
-              >
-                {labels.explode}
+          </div>
+          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-10">
+            <div role="group" aria-label={labels.colourBy} className="flex shrink-0 flex-wrap items-center gap-2">
+              <span className="type-label text-muted">{labels.colourBy}</span>
+              <button type="button" aria-pressed={mode === "height"} onClick={() => choose("height")} className={chip}>
+                {labels.byHeight}
               </button>
-            )}
-            <button type="button" onClick={() => { setPlace(null); sceneRef.current?.resetView(); }} className={chip}>
-              {labels.reset}
-            </button>
+              <button type="button" aria-pressed={mode === "use"} onClick={() => choose("use")} className={chip}>
+                {labels.byUse}
+              </button>
+            </div>
+            {/* The turn and the exploded view are toggles, pressed while on. The turn is a long camera move, so it
+                isn't offered with reduced motion; the floors then part and close without moving. */}
+            <div role="group" aria-label={labels.view} className="flex flex-wrap items-center gap-2 md:justify-end">
+              <span className="type-label text-muted">{labels.view}</span>
+              <button type="button" aria-pressed={orbiting} onClick={() => sceneRef.current?.orbit(!orbiting)} className={`${chip} motion-reduce:hidden`}>
+                {labels.orbit}
+              </button>
+              {explodable && (
+                <button
+                  type="button"
+                  aria-pressed={apart}
+                  onClick={() => {
+                    if (!apart) setPlace(null);
+                    setSaid(apart ? "" : labels.apartSaid);
+                    sceneRef.current?.explode(!apart);
+                  }}
+                  className={chip}
+                >
+                  {labels.explode}
+                </button>
+              )}
+              <button type="button" onClick={() => { setPlace(null); sceneRef.current?.resetView(); }} className={chip}>
+                {labels.reset}
+              </button>
+            </div>
           </div>
         </div>
       )}
