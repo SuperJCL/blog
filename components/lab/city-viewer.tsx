@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { loadCity } from "@/lib/lab/city-data";
 import type { BuildingInfo, CityPalette, CityScene, ColourMode, FloorTags, InfoEvent, Legend } from "@/lib/lab/city-scene";
 
@@ -45,16 +45,20 @@ function readPalette(el: HTMLElement): CityPalette {
   return { bg: v("bg"), surface: v("surface"), line: v("line"), muted: v("muted"), fg: v("fg"), mark: v("accent-text"), blue: v("data-blue"), amber: v("data-amber") };
 }
 
-// The building label stays inside the frame. Beside a mouse pointer, flipped left near the right edge; centred
-// on a tap (or the middle, for Enter), held back from the sides. Above the point when it's near the bottom.
+// The building label stays inside the frame, by its measured height. Beside a mouse pointer, below it unless
+// there's no room, flipped left near the right edge. Centred on a pinned point (a landmark's roof, a tap, the
+// middle for Enter) and above it where there's room, so the building or the finger doesn't hide it; held back
+// from the sides, and from the edges when the point is outside the frame (a tall roof).
 const CARD_WIDTH = 256; // max-w-64
-function cardPosition(e: NonNullable<InfoEvent>): React.CSSProperties {
-  const below = e.y < e.height - 120 ? "14px" : "calc(-100% - 14px)";
-  if (!e.pinned) return { left: e.x, top: e.y, transform: `translate(${e.x > e.width - CARD_WIDTH - 24 ? "calc(-100% - 14px)" : "14px"}, ${below})` };
-  // A pinned point is a roof: the label sits above it where there's room, so the building stays in view. The
-  // point can be outside the frame (a tall roof); the label then stays at the nearest edge.
-  const half = CARD_WIDTH / 2 + 8, top = Math.min(Math.max(e.y, 12), e.height - 12);
-  return { left: Math.min(Math.max(e.x, half), Math.max(half, e.width - half)), top, transform: `translate(-50%, ${top > 132 ? "calc(-100% - 14px)" : "14px"})` };
+const CARD_GAP = 14, CARD_EDGE = 8;
+function cardPosition(e: NonNullable<InfoEvent>, height: number): React.CSSProperties {
+  const top = e.pinned ? Math.min(Math.max(e.y, 12), e.height - 12) : e.y;
+  const fitsAbove = top - CARD_GAP - height >= CARD_EDGE, fitsBelow = top + CARD_GAP + height <= e.height - CARD_EDGE;
+  const above = e.pinned ? fitsAbove || (!fitsBelow && top > e.height / 2) : !fitsBelow && (fitsAbove || top > e.height / 2);
+  const y = above ? `calc(-100% - ${CARD_GAP}px)` : `${CARD_GAP}px`;
+  if (!e.pinned) return { left: e.x, top, transform: `translate(${e.x > e.width - CARD_WIDTH - 24 ? `calc(-100% - ${CARD_GAP}px)` : `${CARD_GAP}px`}, ${y})` };
+  const half = CARD_WIDTH / 2 + 8;
+  return { left: Math.min(Math.max(e.x, half), Math.max(half, e.width - half)), top, transform: `translate(-50%, ${y})` };
 }
 
 const chip =
@@ -80,6 +84,14 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
   const [explodable, setExplodable] = useState(false);
   const [apart, setApart] = useState(false);
   const [floorTags, setFloorTags] = useState<FloorTags>(null);
+  // The label's height as laid out, for keeping it inside the frame; it wraps to more lines in a narrow frame.
+  const [cardHeight, setCardHeight] = useState(96);
+  const cardRef = useCallback((el: HTMLDivElement | null) => {
+    if (!el) return;
+    const ro = new ResizeObserver(() => setCardHeight(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     const frame = frameRef.current, canvas = canvasRef.current;
@@ -226,9 +238,10 @@ export function CityViewer({ data, zh, places, preview, labels }: Props) {
         ))}
         {card && hover && (
           <div
+            ref={cardRef}
             aria-hidden="true"
-            className="pointer-events-none absolute flex max-w-64 flex-col gap-1 rounded-md border border-line bg-bg/90 px-3 py-2 text-sm backdrop-blur-sm"
-            style={cardPosition(hover)}
+            className="pointer-events-none absolute flex w-max max-w-64 flex-col gap-1 rounded-md border border-line bg-bg/90 px-3 py-2 text-sm backdrop-blur-sm"
+            style={cardPosition(hover, cardHeight)}
           >
             <span className="font-medium text-pretty">{card.name}</span>
             {card.also && <span className="text-xs text-muted">{card.also}</span>}
